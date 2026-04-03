@@ -14,201 +14,169 @@ body { background:#f5f5f7; }
 
 <body class="font-sans text-gray-800">
 
-<!-- HEADER -->
-<div class="flex justify-between items-center px-6 py-4 bg-white shadow-sm">
-  <h1 class="text-xl font-semibold">MIP Command Center</h1>
-  <div class="text-sm text-gray-500">Live Operations</div>
-</div>
+<div class="flex h-screen">
 
-<!-- MAIN -->
-<div class="p-6 space-y-6">
+  <!-- SIDEBAR -->
+  <div class="w-64 bg-white border-r p-4 space-y-2">
 
-  <!-- SECTION 1: TODAY OPERATIONS -->
-  <div class="card">
-    <h2 class="title text-green-600">Today's Operations</h2>
+    <h1 class="text-lg font-semibold mb-6">MIP</h1>
 
-    <div class="grid md:grid-cols-3 gap-4 mt-4">
+    <button onclick="openPage('dashboard')" class="menu-btn active">Dashboard</button>
+    <button onclick="openPage('operations')" class="menu-btn">Operations</button>
+    <button onclick="openPage('alerts')" class="menu-btn">Alerts</button>
+    <button onclick="openPage('kpis')" class="menu-btn">KPIs</button>
+    <button onclick="openPage('clients')" class="menu-btn">Clients</button>
+    <button onclick="openPage('tasks')" class="menu-btn">Tasks</button>
+    <button onclick="openPage('billing')" class="menu-btn">Billing</button>
+    <button onclick="openPage('employees')" class="menu-btn">Employees</button>
+    <button onclick="openPage('quotes')" class="menu-btn">Quotes</button>
 
-      <div class="subcard">
-        <p class="label">Orders to Fulfill</p>
-        <h3 class="value">18</h3>
-      </div>
+  </div>
 
-      <div class="subcard">
-        <p class="label">Shipments Scheduled</p>
-        <h3 class="value">7</h3>
-      </div>
+  <!-- MAIN CONTENT -->
+  <div class="flex-1 p-6 overflow-auto">
 
-      <div class="subcard">
-        <p class="label">Pending WR / CR</p>
-        <h3 class="value">5</h3>
+    <!-- DASHBOARD -->
+    <div id="dashboard" class="page">
+
+      <h2 class="title mb-4">Overview</h2>
+
+      <div class="grid md:grid-cols-4 gap-4">
+        <div class="card"><p class="label">Orders Today</p><h3 class="value">24</h3></div>
+        <div class="card"><p class="label">Shipments</p><h3 class="value">8</h3></div>
+        <div class="card"><p class="label">Issues</p><h3 class="value text-red-500">3</h3></div>
+        <div class="card"><p class="label">Revenue</p><h3 class="value">$4,200</h3></div>
       </div>
 
     </div>
-  </div>
 
-  <!-- SECTION 2: ALERTS -->
-  <div class="card">
-    <h2 class="title text-yellow-500">Alerts</h2>
+    <!-- OPERATIONS -->
+    <div id="operations" class="page hidden">
+      <h2 class="title mb-4">Today's Operations</h2>
 
-    <div class="mt-4 space-y-2">
-      <div class="alert">⚠ Missing inventory - Finesse Decor</div>
-      <div class="alert">⚠ Delay in inbound shipment</div>
-      <div class="alert">⚠ Exception in order #3021</div>
+      <div class="card">
+        <table class="w-full text-sm">
+          <thead class="text-gray-500">
+            <tr>
+              <th class="text-left">Client</th>
+              <th>Status</th>
+              <th>Type</th>
+              <th>Time</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="row">
+              <td>Finesse Decor</td>
+              <td>Processing</td>
+              <td>Outbound</td>
+              <td>10:30 AM</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
-  </div>
 
-  <!-- SECTION 3: KPIs -->
-  <div class="card">
-    <h2 class="title text-blue-600">KPIs</h2>
+    <!-- ALERTS -->
+    <div id="alerts" class="page hidden">
+      <h2 class="title mb-4">Alerts</h2>
 
-    <div class="grid md:grid-cols-3 gap-4 mt-4">
-
-      <div class="subcard">
-        <p class="label">Avg Receiving Time</p>
-        <h3 class="value">1h</h3>
+      <div class="space-y-2">
+        <div class="alert">⚠ Missing inventory</div>
+        <div class="alert">⚠ Shipment delay</div>
       </div>
-
-      <div class="subcard">
-        <p class="label">Orders Today</p>
-        <h3 class="value">24</h3>
-      </div>
-
-      <div class="subcard">
-        <p class="label">Errors / Issues</p>
-        <h3 class="value text-red-500">3</h3>
-      </div>
-
     </div>
-  </div>
 
-  <!-- SECTION 4: CLIENTS -->
-  <div class="card">
-    <h2 class="title text-purple-600">Clients</h2>
+    <!-- KPIS -->
+    <div id="kpis" class="page hidden">
+      <h2 class="title mb-4">KPIs</h2>
 
-    <div class="grid md:grid-cols-3 gap-4 mt-4">
-
-      <div class="subcard">
-        <p class="label">Active Clients</p>
-        <h3 class="value">12</h3>
+      <div class="grid md:grid-cols-3 gap-4">
+        <div class="card"><p class="label">Receiving Time</p><h3 class="value">1h</h3></div>
+        <div class="card"><p class="label">Orders</p><h3 class="value">24</h3></div>
+        <div class="card"><p class="label">Errors</p><h3 class="value text-red-500">3</h3></div>
       </div>
-
-      <div class="subcard">
-        <p class="label">Priority Accounts</p>
-        <h3 class="value">4</h3>
-      </div>
-
-      <div class="subcard">
-        <p class="label">Recent Activity</p>
-        <h3 class="value">8 updates</h3>
-      </div>
-
     </div>
-  </div>
 
-  <!-- SECTION 5: TASKS -->
-  <div class="card">
-    <h2 class="title text-gray-700">Tasks</h2>
+    <!-- CLIENTS -->
+    <div id="clients" class="page hidden">
+      <h2 class="title mb-4">Clients</h2>
 
-    <ul class="mt-4 space-y-2">
-      <li class="task">✔ Inventory check - aisle B3</li>
-      <li class="task">✔ Follow up with Electro Supply</li>
-      <li class="task">✔ Resolve shipment delay</li>
-    </ul>
-  </div>
-
-  <!-- SECTION 6: BILLING -->
-  <div class="card">
-    <h2 class="title text-indigo-600">Billing / Invoicing</h2>
-
-    <div class="grid md:grid-cols-3 gap-4 mt-4">
-
-      <div class="subcard">
-        <p class="label">Pending Invoices</p>
-        <h3 class="value">6</h3>
+      <div class="card">
+        <ul class="space-y-2">
+          <li class="row cursor-pointer hover:bg-gray-50 p-2 rounded">Finesse Decor</li>
+          <li class="row cursor-pointer hover:bg-gray-50 p-2 rounded">Electro Supply</li>
+        </ul>
       </div>
-
-      <div class="subcard">
-        <p class="label">Paid Today</p>
-        <h3 class="value">$4,200</h3>
-      </div>
-
-      <div class="subcard">
-        <p class="label">Overdue</p>
-        <h3 class="value text-red-500">2</h3>
-      </div>
-
     </div>
-  </div>
 
-  <!-- SECTION 7: EMPLOYEES -->
-  <div class="card">
-    <h2 class="title text-pink-600">Employees</h2>
+    <!-- TASKS -->
+    <div id="tasks" class="page hidden">
+      <h2 class="title mb-4">Tasks</h2>
 
-    <div class="grid md:grid-cols-3 gap-4 mt-4">
-
-      <div class="subcard">
-        <p class="label">Active Staff</p>
-        <h3 class="value">3</h3>
+      <div class="space-y-2">
+        <div class="task">✔ Inventory check</div>
+        <div class="task">✔ Follow up</div>
       </div>
-
-      <div class="subcard">
-        <p class="label">On Shift</p>
-        <h3 class="value">2</h3>
-      </div>
-
-      <div class="subcard">
-        <p class="label">Tasks Assigned</p>
-        <h3 class="value">9</h3>
-      </div>
-
     </div>
-  </div>
 
-  <!-- SECTION 8: PRICING QUOTES -->
-  <div class="card">
-    <h2 class="title text-orange-500">Pricing / Quotes</h2>
+    <!-- BILLING -->
+    <div id="billing" class="page hidden">
+      <h2 class="title mb-4">Billing</h2>
 
-    <div class="grid md:grid-cols-3 gap-4 mt-4">
-
-      <div class="subcard">
-        <p class="label">Quotes Sent</p>
-        <h3 class="value">11</h3>
+      <div class="grid md:grid-cols-3 gap-4">
+        <div class="card"><p class="label">Pending</p><h3 class="value">6</h3></div>
+        <div class="card"><p class="label">Paid</p><h3 class="value">$4,200</h3></div>
+        <div class="card"><p class="label">Overdue</p><h3 class="value text-red-500">2</h3></div>
       </div>
-
-      <div class="subcard">
-        <p class="label">Pending Approval</p>
-        <h3 class="value">4</h3>
-      </div>
-
-      <div class="subcard">
-        <p class="label">Closed Deals</p>
-        <h3 class="value">3</h3>
-      </div>
-
     </div>
-  </div>
 
+    <!-- EMPLOYEES -->
+    <div id="employees" class="page hidden">
+      <h2 class="title mb-4">Employees</h2>
+
+      <div class="card">
+        <ul class="space-y-2">
+          <li class="row">John - Active</li>
+          <li class="row">Carlos - On Shift</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- QUOTES -->
+    <div id="quotes" class="page hidden">
+      <h2 class="title mb-4">Quotes</h2>
+
+      <div class="grid md:grid-cols-3 gap-4">
+        <div class="card"><p class="label">Sent</p><h3 class="value">11</h3></div>
+        <div class="card"><p class="label">Pending</p><h3 class="value">4</h3></div>
+        <div class="card"><p class="label">Closed</p><h3 class="value">3</h3></div>
+      </div>
+    </div>
+
+  </div>
 </div>
 
 <!-- STYLES -->
 <style>
+.menu-btn {
+  width:100%;
+  text-align:left;
+  padding:10px;
+  border-radius:8px;
+}
+.menu-btn:hover {
+  background:#f3f4f6;
+}
+.menu-btn.active {
+  background:black;
+  color:white;
+}
+
 .card {
   background:white;
-  border-radius:16px;
-  padding:20px;
+  padding:16px;
+  border-radius:14px;
   box-shadow:0 1px 3px rgba(0,0,0,0.05);
-}
-
-.subcard {
-  background:#fafafa;
-  padding:12px;
-  border-radius:12px;
-}
-
-.title {
-  font-weight:600;
-  font-size:16px;
 }
 
 .label {
@@ -221,10 +189,14 @@ body { background:#f5f5f7; }
   font-weight:600;
 }
 
-.task {
-  background:#f9fafb;
-  padding:10px;
-  border-radius:8px;
+.title {
+  font-size:18px;
+  font-weight:600;
+}
+
+.row {
+  border-top:1px solid #eee;
+  padding:8px 0;
 }
 
 .alert {
@@ -232,7 +204,24 @@ body { background:#f5f5f7; }
   padding:10px;
   border-radius:8px;
 }
+
+.task {
+  background:#f9fafb;
+  padding:10px;
+  border-radius:8px;
+}
 </style>
+
+<!-- JS -->
+<script>
+function openPage(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
+  document.getElementById(page).classList.remove('hidden');
+
+  document.querySelectorAll('.menu-btn').forEach(btn => btn.classList.remove('active'));
+  event.target.classList.add('active');
+}
+</script>
 
 </body>
 </html>
