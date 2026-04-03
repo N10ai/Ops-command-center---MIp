@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>MIP Command Center</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script src="https://cdn.tailwindcss.com"></script>
+
+<style>
+body { background:#f5f5f7; }
+</style>
+</head>
+
+<body class="font-sans text-gray-800">
+
+<!-- HEADER -->
+<div class="flex justify-between items-center px-6 py-4 bg-white shadow-sm">
+  <h1 class="text-xl font-semibold">MIP Command Center</h1>
+  <div class="text-sm text-gray-500">Live Operations</div>
+</div>
+
+<!-- MAIN -->
+<div class="p-6 space-y-6">
+
+  <!-- SECTION 1: TODAY OPERATIONS -->
+  <div class="card">
+    <h2 class="title text-green-600">Today's Operations</h2>
+
+    <div class="grid md:grid-cols-3 gap-4 mt-4">
+
+      <div class="subcard">
+        <p class="label">Orders to Fulfill</p>
+        <h3 class="value">18</h3>
+      </div>
+
+      <div class="subcard">
+        <p class="label">Shipments Scheduled</p>
+        <h3 class="value">7</h3>
+      </div>
+
+      <div class="subcard">
+        <p class="label">Pending WR / CR</p>
+        <h3 class="value">5</h3>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- SECTION 2: ALERTS -->
+  <div class="card">
+    <h2 class="title text-yellow-500">Alerts</h2>
+
+    <div class="mt-4 space-y-2">
+      <div class="alert">⚠ Missing inventory - Finesse Decor</div>
+      <div class="alert">⚠ Delay in inbound shipment</div>
+      <div class="alert">⚠ Exception in order #3021</div>
+    </div>
+  </div>
+
+  <!-- SECTION 3: KPIs -->
+  <div class="card">
+    <h2 class="title text-blue-600">KPIs</h2>
+
+    <div class="grid md:grid-cols-3 gap-4 mt-4">
+
+      <div class="subcard">
+        <p class="label">Avg Receiving Time</p>
+        <h3 class="value">1h</h3>
+      </div>
+
+      <div class="subcard">
+        <p class="label">Orders Today</p>
+        <h3 class="value">24</h3>
+      </div>
+
+      <div class="subcard">
+        <p class="label">Errors / Issues</p>
+        <h3 class="value text-red-500">3</h3>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- SECTION 4: CLIENTS -->
+  <div class="card">
+    <h2 class="title text-purple-600">Clients</h2>
+
+    <div class="grid md:grid-cols-3 gap-4 mt-4">
+
+      <div class="subcard">
+        <p class="label">Active Clients</p>
+        <h3 class="value">12</h3>
+      </div>
+
+      <div class="subcard">
+        <p class="label">Priority Accounts</p>
+        <h3 class="value">4</h3>
+      </div>
+
+      <div class="subcard">
+        <p class="label">Recent Activity</p>
+        <h3 class="value">8 updates</h3>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- SECTION 5: TASKS -->
+  <div class="card">
+    <h2 class="title text-gray-700">Tasks</h2>
+
+    <ul class="mt-4 space-y-2">
+      <li class="task">✔ Inventory check - aisle B3</li>
+      <li class="task">✔ Follow up with Electro Supply</li>
+      <li class="task">✔ Resolve shipment delay</li>
+    </ul>
+  </div>
+
+  <!-- SECTION 6: BILLING -->
+  <div class="card">
+    <h2 class="title text-indigo-600">Billing / Invoicing</h2>
+
+    <div class="grid md:grid-cols-3 gap-4 mt-4">
+
+      <div class="subcard">
+        <p class="label">Pending Invoices</p>
+        <h3 class="value">6</h3>
+      </div>
+
+      <div class="subcard">
+        <p class="label">Paid Today</p>
+        <h3 class="value">$4,200</h3>
+      </div>
+
+      <div class="subcard">
+        <p class="label">Overdue</p>
+        <h3 class="value text-red-500">2</h3>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- SECTION 7: EMPLOYEES -->
+  <div class="card">
+    <h2 class="title text-pink-600">Employees</h2>
+
+    <div class="grid md:grid-cols-3 gap-4 mt-4">
+
+      <div class="subcard">
+        <p class="label">Active Staff</p>
+        <h3 class="value">3</h3>
+      </div>
+
+      <div class="subcard">
+        <p class="label">On Shift</p>
+        <h3 class="value">2</h3>
+      </div>
+
+      <div class="subcard">
+        <p class="label">Tasks Assigned</p>
+        <h3 class="value">9</h3>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- SECTION 8: PRICING QUOTES -->
+  <div class="card">
+    <h2 class="title text-orange-500">Pricing / Quotes</h2>
+
+    <div class="grid md:grid-cols-3 gap-4 mt-4">
+
+      <div class="subcard">
+        <p class="label">Quotes Sent</p>
+        <h3 class="value">11</h3>
+      </div>
+
+      <div class="subcard">
+        <p class="label">Pending Approval</p>
+        <h3 class="value">4</h3>
+      </div>
+
+      <div class="subcard">
+        <p class="label">Closed Deals</p>
+        <h3 class="value">3</h3>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- STYLES -->
+<style>
+.card {
+  background:white;
+  border-radius:16px;
+  padding:20px;
+  box-shadow:0 1px 3px rgba(0,0,0,0.05);
+}
+
+.subcard {
+  background:#fafafa;
+  padding:12px;
+  border-radius:12px;
+}
+
+.title {
+  font-weight:600;
+  font-size:16px;
+}
+
+.label {
+  font-size:12px;
+  color:#6b7280;
+}
+
+.value {
+  font-size:20px;
+  font-weight:600;
+}
+
+.task {
+  background:#f9fafb;
+  padding:10px;
+  border-radius:8px;
+}
+
+.alert {
+  background:#fff7ed;
+  padding:10px;
+  border-radius:8px;
+}
+</style>
+
+</body>
+</html>
