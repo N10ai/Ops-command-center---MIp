@@ -8,218 +8,200 @@
 <script src="https://cdn.tailwindcss.com"></script>
 
 <style>
-body { background:#f5f5f7; }
+body {
+  background: radial-gradient(circle at top, #0b1220, #05070d);
+  color: #e5e7eb;
+}
+
+/* GLASS CARD */
+.glass {
+  background: rgba(255,255,255,0.04);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+}
+
+/* GLOW EFFECT */
+.glow {
+  box-shadow: 0 0 20px rgba(59,130,246,0.25);
+}
+
+/* MENU */
+.menu-btn {
+  width:100%;
+  text-align:left;
+  padding:10px;
+  border-radius:10px;
+  color:#9ca3af;
+}
+
+.menu-btn:hover {
+  background: rgba(255,255,255,0.05);
+}
+
+.menu-btn.active {
+  background: rgba(59,130,246,0.15);
+  color: #3b82f6;
+}
+
+/* MOBILE NAV */
+.mobile-nav button.active {
+  color:#3b82f6;
+  font-weight:600;
+}
 </style>
 </head>
 
-<body class="font-sans text-gray-800">
+<body class="font-sans">
 
-<div class="flex h-screen">
+<div class="flex h-screen overflow-hidden">
 
   <!-- SIDEBAR -->
-  <div class="w-64 bg-white border-r p-4 space-y-2">
+  <div class="hidden md:flex w-64 p-4 flex-col glass">
 
-    <h1 class="text-lg font-semibold mb-6">MIP</h1>
+    <h1 class="text-lg font-semibold mb-6 text-white">MIP</h1>
 
-    <button onclick="openPage('dashboard')" class="menu-btn active">Dashboard</button>
-    <button onclick="openPage('operations')" class="menu-btn">Operations</button>
-    <button onclick="openPage('alerts')" class="menu-btn">Alerts</button>
-    <button onclick="openPage('kpis')" class="menu-btn">KPIs</button>
-    <button onclick="openPage('clients')" class="menu-btn">Clients</button>
-    <button onclick="openPage('tasks')" class="menu-btn">Tasks</button>
-    <button onclick="openPage('billing')" class="menu-btn">Billing</button>
-    <button onclick="openPage('employees')" class="menu-btn">Employees</button>
-    <button onclick="openPage('quotes')" class="menu-btn">Quotes</button>
+    <button onclick="openPage('dashboard', this)" class="menu-btn active">Dashboard</button>
+    <button onclick="openPage('operations', this)" class="menu-btn">Operations</button>
+    <button onclick="openPage('alerts', this)" class="menu-btn">Alerts</button>
+    <button onclick="openPage('kpis', this)" class="menu-btn">KPIs</button>
+    <button onclick="openPage('clients', this)" class="menu-btn">Clients</button>
+    <button onclick="openPage('tasks', this)" class="menu-btn">Tasks</button>
+    <button onclick="openPage('billing', this)" class="menu-btn">Billing</button>
+    <button onclick="openPage('employees', this)" class="menu-btn">Employees</button>
+    <button onclick="openPage('quotes', this)" class="menu-btn">Quotes</button>
 
   </div>
 
-  <!-- MAIN CONTENT -->
-  <div class="flex-1 p-6 overflow-auto">
+  <!-- MAIN -->
+  <div class="flex-1 flex flex-col overflow-hidden">
 
-    <!-- DASHBOARD -->
-    <div id="dashboard" class="page">
+    <!-- TOP BAR -->
+    <div class="md:hidden p-4 flex justify-between items-center glass">
+      <h1 class="font-semibold text-white">MIP</h1>
+      <span class="text-sm text-gray-400">Dashboard</span>
+    </div>
 
-      <h2 class="title mb-4">Overview</h2>
+    <!-- CONTENT -->
+    <div class="flex-1 overflow-auto p-4 md:p-6 space-y-6">
 
-      <div class="grid md:grid-cols-4 gap-4">
-        <div class="card"><p class="label">Orders Today</p><h3 class="value">24</h3></div>
-        <div class="card"><p class="label">Shipments</p><h3 class="value">8</h3></div>
-        <div class="card"><p class="label">Issues</p><h3 class="value text-red-500">3</h3></div>
-        <div class="card"><p class="label">Revenue</p><h3 class="value">$4,200</h3></div>
+      <!-- DASHBOARD -->
+      <div id="dashboard" class="page">
+
+        <h2 class="text-xl font-semibold mb-4 text-white">Overview</h2>
+
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+
+          <div class="glass glow p-4">
+            <p class="text-xs text-gray-400">Orders</p>
+            <h3 class="text-2xl font-semibold text-white">24</h3>
+          </div>
+
+          <div class="glass glow p-4">
+            <p class="text-xs text-gray-400">Shipments</p>
+            <h3 class="text-2xl font-semibold text-white">8</h3>
+          </div>
+
+          <div class="glass glow p-4">
+            <p class="text-xs text-gray-400">Issues</p>
+            <h3 class="text-2xl font-semibold text-red-400">3</h3>
+          </div>
+
+          <div class="glass glow p-4">
+            <p class="text-xs text-gray-400">Revenue</p>
+            <h3 class="text-2xl font-semibold text-white">$4,200</h3>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- OPERATIONS -->
+      <div id="operations" class="page hidden">
+
+        <h2 class="text-xl font-semibold mb-4 text-white">Operations</h2>
+
+        <div class="glass p-4 overflow-auto">
+          <table class="w-full text-sm text-gray-300">
+            <thead class="text-gray-400">
+              <tr>
+                <th class="text-left">Client</th>
+                <th>Status</th>
+                <th>Type</th>
+                <th>Time</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="border-t border-gray-700">
+                <td>Finesse Decor</td>
+                <td class="text-blue-400">Processing</td>
+                <td>Outbound</td>
+                <td>10:30 AM</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+
+      <!-- ALERTS -->
+      <div id="alerts" class="page hidden">
+
+        <h2 class="text-xl font-semibold mb-4 text-white">Alerts</h2>
+
+        <div class="space-y-3">
+          <div class="glass p-3 text-orange-400 glow">⚠ Missing inventory</div>
+          <div class="glass p-3 text-orange-400 glow">⚠ Shipment delay</div>
+        </div>
+
+      </div>
+
+      <!-- KPIS -->
+      <div id="kpis" class="page hidden">
+
+        <h2 class="text-xl font-semibold mb-4 text-white">KPIs</h2>
+
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+
+          <div class="glass p-4 glow">
+            <p class="text-xs text-gray-400">Receiving</p>
+            <h3 class="text-xl text-white">1h</h3>
+          </div>
+
+          <div class="glass p-4 glow">
+            <p class="text-xs text-gray-400">Orders</p>
+            <h3 class="text-xl text-white">24</h3>
+          </div>
+
+          <div class="glass p-4 glow">
+            <p class="text-xs text-gray-400">Errors</p>
+            <h3 class="text-xl text-red-400">3</h3>
+          </div>
+
+        </div>
+
       </div>
 
     </div>
 
-    <!-- OPERATIONS -->
-    <div id="operations" class="page hidden">
-      <h2 class="title mb-4">Today's Operations</h2>
-
-      <div class="card">
-        <table class="w-full text-sm">
-          <thead class="text-gray-500">
-            <tr>
-              <th class="text-left">Client</th>
-              <th>Status</th>
-              <th>Type</th>
-              <th>Time</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr class="row">
-              <td>Finesse Decor</td>
-              <td>Processing</td>
-              <td>Outbound</td>
-              <td>10:30 AM</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- ALERTS -->
-    <div id="alerts" class="page hidden">
-      <h2 class="title mb-4">Alerts</h2>
-
-      <div class="space-y-2">
-        <div class="alert">⚠ Missing inventory</div>
-        <div class="alert">⚠ Shipment delay</div>
-      </div>
-    </div>
-
-    <!-- KPIS -->
-    <div id="kpis" class="page hidden">
-      <h2 class="title mb-4">KPIs</h2>
-
-      <div class="grid md:grid-cols-3 gap-4">
-        <div class="card"><p class="label">Receiving Time</p><h3 class="value">1h</h3></div>
-        <div class="card"><p class="label">Orders</p><h3 class="value">24</h3></div>
-        <div class="card"><p class="label">Errors</p><h3 class="value text-red-500">3</h3></div>
-      </div>
-    </div>
-
-    <!-- CLIENTS -->
-    <div id="clients" class="page hidden">
-      <h2 class="title mb-4">Clients</h2>
-
-      <div class="card">
-        <ul class="space-y-2">
-          <li class="row cursor-pointer hover:bg-gray-50 p-2 rounded">Finesse Decor</li>
-          <li class="row cursor-pointer hover:bg-gray-50 p-2 rounded">Electro Supply</li>
-        </ul>
-      </div>
-    </div>
-
-    <!-- TASKS -->
-    <div id="tasks" class="page hidden">
-      <h2 class="title mb-4">Tasks</h2>
-
-      <div class="space-y-2">
-        <div class="task">✔ Inventory check</div>
-        <div class="task">✔ Follow up</div>
-      </div>
-    </div>
-
-    <!-- BILLING -->
-    <div id="billing" class="page hidden">
-      <h2 class="title mb-4">Billing</h2>
-
-      <div class="grid md:grid-cols-3 gap-4">
-        <div class="card"><p class="label">Pending</p><h3 class="value">6</h3></div>
-        <div class="card"><p class="label">Paid</p><h3 class="value">$4,200</h3></div>
-        <div class="card"><p class="label">Overdue</p><h3 class="value text-red-500">2</h3></div>
-      </div>
-    </div>
-
-    <!-- EMPLOYEES -->
-    <div id="employees" class="page hidden">
-      <h2 class="title mb-4">Employees</h2>
-
-      <div class="card">
-        <ul class="space-y-2">
-          <li class="row">John - Active</li>
-          <li class="row">Carlos - On Shift</li>
-        </ul>
-      </div>
-    </div>
-
-    <!-- QUOTES -->
-    <div id="quotes" class="page hidden">
-      <h2 class="title mb-4">Quotes</h2>
-
-      <div class="grid md:grid-cols-3 gap-4">
-        <div class="card"><p class="label">Sent</p><h3 class="value">11</h3></div>
-        <div class="card"><p class="label">Pending</p><h3 class="value">4</h3></div>
-        <div class="card"><p class="label">Closed</p><h3 class="value">3</h3></div>
-      </div>
+    <!-- MOBILE NAV -->
+    <div class="md:hidden mobile-nav grid grid-cols-4 text-xs text-center py-2 glass">
+      <button onclick="openPage('dashboard', this)" class="active">Dashboard</button>
+      <button onclick="openPage('operations', this)">Ops</button>
+      <button onclick="openPage('alerts', this)">Alerts</button>
+      <button onclick="openPage('kpis', this)">KPIs</button>
     </div>
 
   </div>
 </div>
 
-<!-- STYLES -->
-<style>
-.menu-btn {
-  width:100%;
-  text-align:left;
-  padding:10px;
-  border-radius:8px;
-}
-.menu-btn:hover {
-  background:#f3f4f6;
-}
-.menu-btn.active {
-  background:black;
-  color:white;
-}
-
-.card {
-  background:white;
-  padding:16px;
-  border-radius:14px;
-  box-shadow:0 1px 3px rgba(0,0,0,0.05);
-}
-
-.label {
-  font-size:12px;
-  color:#6b7280;
-}
-
-.value {
-  font-size:20px;
-  font-weight:600;
-}
-
-.title {
-  font-size:18px;
-  font-weight:600;
-}
-
-.row {
-  border-top:1px solid #eee;
-  padding:8px 0;
-}
-
-.alert {
-  background:#fff7ed;
-  padding:10px;
-  border-radius:8px;
-}
-
-.task {
-  background:#f9fafb;
-  padding:10px;
-  border-radius:8px;
-}
-</style>
-
-<!-- JS -->
 <script>
-function openPage(page) {
+function openPage(page, el) {
   document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
   document.getElementById(page).classList.remove('hidden');
 
-  document.querySelectorAll('.menu-btn').forEach(btn => btn.classList.remove('active'));
-  event.target.classList.add('active');
+  document.querySelectorAll('.menu-btn, .mobile-nav button').forEach(btn => btn.classList.remove('active'));
+  if(el) el.classList.add('active');
 }
 </script>
 
