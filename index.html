@@ -7,21 +7,27 @@
 
 <script src="https://cdn.tailwindcss.com"></script>
 
+<!-- APP-LIKE SETTINGS -->
+<meta name="theme-color" content="#05070d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="MIP">
+
 <style>
 body {
   background: radial-gradient(circle at top, #0b1220, #05070d);
   color: #e5e7eb;
 }
 
-/* GLASS CARD */
+/* GLASS */
 .glass {
   background: rgba(255,255,255,0.04);
-  backdrop-filter: blur(12px);
+  backdrop-filter: blur(14px);
   border: 1px solid rgba(255,255,255,0.08);
   border-radius: 16px;
 }
 
-/* GLOW EFFECT */
+/* GLOW */
 .glow {
   box-shadow: 0 0 20px rgba(59,130,246,0.25);
 }
@@ -52,11 +58,11 @@ body {
 </style>
 </head>
 
-<body class="font-sans">
+<body class="font-sans bg-[#05070d] min-h-screen">
 
-<div class="flex h-screen overflow-hidden">
+<div class="flex min-h-screen overflow-hidden">
 
-  <!-- SIDEBAR -->
+  <!-- SIDEBAR (DESKTOP) -->
   <div class="hidden md:flex w-64 p-4 flex-col glass">
 
     <h1 class="text-lg font-semibold mb-6 text-white">MIP</h1>
@@ -76,14 +82,19 @@ body {
   <!-- MAIN -->
   <div class="flex-1 flex flex-col overflow-hidden">
 
-    <!-- TOP BAR -->
-    <div class="md:hidden p-4 flex justify-between items-center glass">
-      <h1 class="font-semibold text-white">MIP</h1>
-      <span class="text-sm text-gray-400">Dashboard</span>
+    <!-- MOBILE TOP BAR -->
+    <div class="md:hidden fixed top-0 left-0 right-0 z-50 px-4 pt-6 pb-3 
+    glass backdrop-blur-xl border-b border-white/10">
+
+      <div class="flex justify-between items-center">
+        <h1 class="text-white font-semibold">MIP</h1>
+        <span class="text-sm text-gray-400">Dashboard</span>
+      </div>
+
     </div>
 
     <!-- CONTENT -->
-    <div class="flex-1 overflow-auto p-4 md:p-6 space-y-6">
+    <div class="flex-1 overflow-auto pt-24 pb-28 p-4 md:p-6 space-y-6">
 
       <!-- DASHBOARD -->
       <div id="dashboard" class="page">
@@ -184,12 +195,16 @@ body {
 
     </div>
 
-    <!-- MOBILE NAV -->
-    <div class="md:hidden mobile-nav grid grid-cols-4 text-xs text-center py-2 glass">
+    <!-- MOBILE FLOATING NAV -->
+    <div class="md:hidden mobile-nav fixed bottom-4 left-1/2 -translate-x-1/2 z-50 
+    w-[92%] rounded-2xl glass backdrop-blur-xl border border-white/10 
+    grid grid-cols-4 text-xs text-center py-3">
+
       <button onclick="openPage('dashboard', this)" class="active">Dashboard</button>
       <button onclick="openPage('operations', this)">Ops</button>
       <button onclick="openPage('alerts', this)">Alerts</button>
       <button onclick="openPage('kpis', this)">KPIs</button>
+
     </div>
 
   </div>
