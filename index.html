@@ -112,6 +112,7 @@ body {
           <th>Route</th>
           <th>Cargo</th>
           <th>Date</th>
+          <th>Notes</th>
         </tr>
       </thead>
 
@@ -258,8 +259,10 @@ function openPage(page, el) {
 }
 </script>
 
-  // quotes fetching -n8n
+
+  
 <script>
+  // quotes fetching -n8n
 async function loadQuotes() {
   try {
     const res = await fetch("https://n8n-n10ai.onrender.com/webhook/get-quotes");
@@ -285,9 +288,16 @@ async function loadQuotes() {
           ${safe(row.quoteNumber)}
         </td>
 
-        <td class="${getStatusColor(row.status)} font-medium">
-          ${safe(row.status)}
-        </td>
+        <td>
+  <select 
+    class="bg-transparent text-sm ${getStatusColor(row.status)}"
+    onchange="updateField('${row.quoteNumber}', 'status', this.value)"
+  >
+    <option ${row.status === 'Quoting' ? 'selected' : ''}>Quoting</option>
+    <option ${row.status === 'Approved' ? 'selected' : ''}>Approved</option>
+    <option ${row.status === 'Rejected' ? 'selected' : ''}>Rejected</option>
+  </select>
+</td>
 
         <td>
           ${safe(row.service)}
@@ -304,6 +314,15 @@ async function loadQuotes() {
         <td class="text-xs text-gray-500">
           ${formatDate(row.date)}
         </td>
+<td>
+  <input 
+    type="text"
+    value="${safe(row.notes)}"
+    class="bg-transparent text-xs border border-gray-600 rounded px-1"
+    onchange="updateField('${row.quoteNumber}', 'notes', this.value)"
+  />
+</td>
+
       `;
 
       tbody.appendChild(tr);
@@ -362,6 +381,31 @@ function getStatusColor(status) {
 }
 </script>
 
+  
+<script>
+//Update Fucntion
+async function updateField(quoteNumber, field, value) {
+  try {
+    const res = await fetch("https://n8n-n10ai.onrender.com/webhook/update-quote", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        quoteNumber,
+        field,
+        value
+      })
+    });
+
+    const result = await res.json();
+    console.log("Updated:", result);
+
+  } catch (err) {
+    console.error("Update failed:", err);
+  }
+}
+</script>
   
 </body>
 </html>
