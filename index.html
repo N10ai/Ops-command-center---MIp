@@ -96,6 +96,36 @@ body {
     <!-- CONTENT -->
     <div class="flex-1 overflow-auto pt-24 pb-28 p-4 md:p-6 space-y-6">
 
+<!-- QUOTES -->
+<div id="quotes" class="page hidden">
+
+  <h2 class="text-xl font-semibold mb-4 text-white">Quotes</h2>
+
+  <div class="glass p-4 overflow-auto">
+    <table class="w-full text-sm text-gray-300">
+      
+      <thead class="text-gray-400">
+        <tr>
+          <th>Quote #</th>
+          <th>Status</th>
+          <th>Service</th>
+          <th>Route</th>
+          <th>Cargo</th>
+          <th>Date</th>
+        </tr>
+      </thead>
+
+      <tbody id="quotesTable">
+        <!-- JS will inject rows here -->
+      </tbody>
+
+    </table>
+  </div>
+
+</div>
+
+
+      
       <!-- DASHBOARD -->
       <div id="dashboard" class="page">
 
@@ -195,6 +225,9 @@ body {
 
     </div>
 
+
+    
+
     <!-- MOBILE FLOATING NAV -->
     <div class="md:hidden mobile-nav fixed bottom-4 left-1/2 -translate-x-1/2 z-50 
     w-[92%] rounded-2xl glass backdrop-blur-xl border border-white/10 
@@ -215,10 +248,120 @@ function openPage(page, el) {
   document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
   document.getElementById(page).classList.remove('hidden');
 
-  document.querySelectorAll('.menu-btn, .mobile-nav button').forEach(btn => btn.classList.remove('active'));
-  if(el) el.classList.add('active');
+  document.querySelectorAll('.menu-btn, .mobile-nav button')
+    .forEach(btn => btn.classList.remove('active'));
+
+  if (el) el.classList.add('active');
+
+  // 🔥 LOAD QUOTES ONLY WHEN OPENED
+  if (page === "quotes") loadQuotes();
 }
 </script>
 
+  // quotes fetching -n8n
+<script>
+async function loadQuotes() {
+  try {
+    const res = await fetch("https://n8n-n10ai.onrender.com/webhook/get-quotes");
+    const data = await res.json();
+
+    console.log("Quotes data:", data);
+
+    const tbody = document.getElementById("quotesTable");
+    if (!tbody) return;
+
+    tbody.innerHTML = "";
+
+    data.forEach(row => {
+
+      const route = extractRoute(row.summary);
+      const cargoPreview = extractCargo(row.cargoDetails);
+
+      const tr = document.createElement("tr");
+      tr.className = "border-t border-gray-700";
+
+      tr.innerHTML = `
+        <td class="text-blue-400 font-medium">
+          ${safe(row.quoteNumber)}
+        </td>
+
+        <td class="${getStatusColor(row.status)} font-medium">
+          ${safe(row.status)}
+        </td>
+
+        <td>
+          ${safe(row.service)}
+        </td>
+
+        <td class="text-gray-400 text-xs">
+          ${route}
+        </td>
+
+        <td class="text-xs text-gray-400">
+          ${cargoPreview}
+        </td>
+
+        <td class="text-xs text-gray-500">
+          ${formatDate(row.date)}
+        </td>
+      `;
+
+      tbody.appendChild(tr);
+    });
+
+  } catch (err) {
+    console.error("Error loading quotes:", err);
+  }
+}
+
+// helpers
+function safe(val) {
+  return val ? val : "-";
+}
+
+function formatDate(date) {
+  if (!date) return "-";
+  try {
+    return new Date(date).toLocaleDateString();
+  } catch {
+    return date;
+  }
+}
+
+function extractRoute(summary) {
+  if (!summary) return "-";
+
+  const originMatch = summary.match(/Origin:\s*(.*)/i);
+  const destMatch = summary.match(/Destination:\s*(.*)/i);
+
+  const origin = originMatch ? originMatch[1].split("\n")[0].trim() : "";
+  const destination = destMatch ? destMatch[1].split("\n")[0].trim() : "";
+
+  if (!origin && !destination) return "-";
+
+  return `${origin} → ${destination}`;
+}
+
+function extractCargo(cargo) {
+  if (!cargo) return "-";
+
+  const match = cargo.match(/Commodity:\s*(.*)/i);
+  return match ? match[1].trim() : "View details";
+}
+
+function getStatusColor(status) {
+  if (!status) return "text-gray-300";
+
+  status = status.toLowerCase();
+
+  if (status.includes("quoting") || status.includes("pending")) return "text-yellow-400";
+  if (status.includes("approved")) return "text-green-400";
+  if (status.includes("rejected")) return "text-red-400";
+
+  return "text-gray-300";
+}
+</script>
+
+  
 </body>
 </html>
