@@ -335,32 +335,36 @@ if (cardsContainer) {
   const card = document.createElement("div");
   card.className = "glass p-4 rounded-xl space-y-2";
 
-  card.innerHTML = `
-    <div class="flex justify-between items-center">
-      <span class="text-blue-400 font-semibold">
-        ${safe(row.quoteNumber)}
-      </span>
+card.innerHTML = `
+  <div class="flex justify-between items-center">
+    <span class="text-blue-400 font-semibold">
+      ${safe(row.quoteNumber)}
+    </span>
 
-      <select 
-        class="bg-transparent text-xs ${getStatusColor(row.status)}"
-        onchange="updateField('${row.quoteNumber}', 'status', this.value)"
-      >
-        <option ${row.status === 'Quoting' ? 'selected' : ''}>Quoting</option>
-        <option ${row.status === 'Approved' ? 'selected' : ''}>Approved</option>
-        <option ${row.status === 'Rejected' ? 'selected' : ''}>Rejected</option>
-      </select>
-    </div>
+    <select 
+      class="bg-transparent text-xs ${getStatusColor(row.status)}"
+      onclick="event.stopPropagation()"
+      onchange="updateField('${row.quoteNumber}', 'status', this.value)"
+    >
+      <option ${row.status === 'Quoting' ? 'selected' : ''}>Quoting</option>
+      <option ${row.status === 'Approved' ? 'selected' : ''}>Approved</option>
+      <option ${row.status === 'Rejected' ? 'selected' : ''}>Rejected</option>
+    </select>
+  </div>
+
+  <div class="text-xs text-gray-400">
+    ${route}
+  </div>
+
+  <div class="text-xs text-gray-300">
+    ${safe(row.service)}
+  </div>
+
+  <!-- 🔽 EXPANDABLE CONTENT -->
+  <div class="extra hidden space-y-2 pt-2 border-t border-white/10">
 
     <div class="text-xs text-gray-400">
-      ${route}
-    </div>
-
-    <div class="text-xs text-gray-300">
-      ${safe(row.service)}
-    </div>
-
-    <div class="text-xs text-gray-500">
-      ${cargoPreview}
+      ${safe(row.cargoDetails || "No details")}
     </div>
 
     <div class="text-xs text-gray-500">
@@ -372,10 +376,16 @@ if (cardsContainer) {
       value="${safe(row.notes)}"
       placeholder="Add notes..."
       class="w-full bg-transparent border border-gray-600 rounded px-2 py-1 text-xs"
+      onclick="event.stopPropagation()"
       onchange="updateField('${row.quoteNumber}', 'notes', this.value)"
     />
-  `;
+  </div>
+`;
 
+card.onclick = () => {
+  const extra = card.querySelector(".extra");
+  extra.classList.toggle("hidden");
+};
   cardsContainer.appendChild(card);
 }
     });
