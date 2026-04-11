@@ -96,14 +96,15 @@ body {
     <!-- CONTENT -->
     <div class="flex-1 overflow-auto pt-24 pb-28 p-4 md:p-6 space-y-6">
 
+
 <!-- QUOTES -->
 <div id="quotes" class="page hidden">
 
   <h2 class="text-xl font-semibold mb-4 text-white">Quotes</h2>
 
-  <div class="glass p-4 overflow-auto">
+  <!-- DESKTOP TABLE -->
+  <div class="glass p-4 overflow-auto hidden md:block">
     <table class="w-full text-sm text-gray-300">
-      
       <thead class="text-gray-400">
         <tr>
           <th>Quote #</th>
@@ -115,13 +116,12 @@ body {
           <th>Notes</th>
         </tr>
       </thead>
-
-      <tbody id="quotesTable">
-        <!-- JS will inject rows here -->
-      </tbody>
-
+      <tbody id="quotesTable"></tbody>
     </table>
   </div>
+
+  <!-- MOBILE CARDS -->
+  <div id="quotesCards" class="space-y-3 md:hidden"></div>
 
 </div>
 
@@ -272,9 +272,11 @@ async function loadQuotes() {
     console.log("Quotes data:", data);
 
     const tbody = document.getElementById("quotesTable");
+    const cardsContainer = document.getElementById("quotesCards");
     if (!tbody) return;
 
     tbody.innerHTML = "";
+if (cardsContainer) cardsContainer.innerHTML = "";
 
     data.forEach(row => {
 
@@ -327,6 +329,55 @@ async function loadQuotes() {
       `;
 
       tbody.appendChild(tr);
+      // 🔥 MOBILE CARD
+if (cardsContainer) {
+
+  const card = document.createElement("div");
+  card.className = "glass p-4 rounded-xl space-y-2";
+
+  card.innerHTML = `
+    <div class="flex justify-between items-center">
+      <span class="text-blue-400 font-semibold">
+        ${safe(row.quoteNumber)}
+      </span>
+
+      <select 
+        class="bg-transparent text-xs ${getStatusColor(row.status)}"
+        onchange="updateField('${row.quoteNumber}', 'status', this.value)"
+      >
+        <option ${row.status === 'Quoting' ? 'selected' : ''}>Quoting</option>
+        <option ${row.status === 'Approved' ? 'selected' : ''}>Approved</option>
+        <option ${row.status === 'Rejected' ? 'selected' : ''}>Rejected</option>
+      </select>
+    </div>
+
+    <div class="text-xs text-gray-400">
+      ${route}
+    </div>
+
+    <div class="text-xs text-gray-300">
+      ${safe(row.service)}
+    </div>
+
+    <div class="text-xs text-gray-500">
+      ${cargoPreview}
+    </div>
+
+    <div class="text-xs text-gray-500">
+      ${formatDate(row.date)}
+    </div>
+
+    <input 
+      type="text"
+      value="${safe(row.notes)}"
+      placeholder="Add notes..."
+      class="w-full bg-transparent border border-gray-600 rounded px-2 py-1 text-xs"
+      onchange="updateField('${row.quoteNumber}', 'notes', this.value)"
+    />
+  `;
+
+  cardsContainer.appendChild(card);
+}
     });
 
   } catch (err) {
