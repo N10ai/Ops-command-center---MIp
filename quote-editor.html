@@ -125,6 +125,13 @@
   { code: "PTY", name: "Panama" },
   { code: "GYE", name: "Guayaquil, Ecuador" }
 ];
+
+let cargo = {
+  grossWeight: 0,
+  volumetricWeight: 0,
+  chargeableWeight: 0
+};
+    
     
     let charges = [
       { name: "A/F General", amountText: "$0.00 x Kg (Min $0.00)" },
@@ -219,11 +226,39 @@
               </div>
             </div>
 
-            <div>
-              <label class="field-label">Chargeable Weight</label>
-              <input class="field-input" value="${escapeHtml(quoteData.chargeableWeight)}" onchange="updateQuoteField('chargeableWeight', this.value)">
-            </div>
-          </div>
+<div>
+  <div class="field-label">Cargo Details</div>
+
+  <div class="grid grid-cols-3 gap-2">
+
+    <div>
+      <label class="field-label">Gross</label>
+      <input 
+        type="number"
+        class="field-input"
+        value="${cargo.grossWeight}"
+        onchange="updateCargo('grossWeight', this.value)">
+    </div>
+
+    <div>
+      <label class="field-label">Volumetric</label>
+      <input 
+        type="number"
+        class="field-input"
+        value="${cargo.volumetricWeight}"
+        onchange="updateCargo('volumetricWeight', this.value)">
+    </div>
+
+    <div>
+      <label class="field-label">Chargeable</label>
+      <input 
+        class="field-input"
+        value="${cargo.chargeableWeight}"
+        disabled>
+    </div>
+
+  </div>
+</div>
         `;
       }
 
@@ -455,7 +490,7 @@
                     <table width="100%" cellpadding="10" cellspacing="0" style="border:1px solid #e4e4e4;border-radius:6px;background:#ffffff;table-layout:fixed;">
                       <tr>
                         <td><strong>Chargeable weight:</strong></td>
-                        <td align="right">${escapeHtml(quoteData.chargeableWeight)}</td>
+                        <td align="right">${cargo.chargeableWeight}</td>
                       </tr>
                       <tr>
                         <td><strong>Total:</strong></td>
@@ -564,6 +599,19 @@ function removeStop(i) {
   renderPreview();
 }
 
+
+function updateCargo(field, value) {
+  cargo[field] = Number(value) || 0;
+
+  // 🔥 auto-calculate
+  cargo.chargeableWeight = Math.max(
+    cargo.grossWeight,
+    cargo.volumetricWeight
+  );
+
+  renderPreview();
+}
+    
     
   </script>
 
