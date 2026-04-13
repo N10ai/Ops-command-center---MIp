@@ -326,6 +326,15 @@ if (cardsContainer) cardsContainer.innerHTML = "";
   />
 </td>
 
+<td>
+  <button 
+    onclick="openQuote('${row.quoteNumber}')"
+    class="text-blue-400 underline text-xs"
+  >
+    Open
+  </button>
+</td>
+
       `;
 
       tbody.appendChild(tr);
@@ -467,6 +476,14 @@ async function updateField(quoteNumber, field, value) {
     console.error("Update failed:", err);
   }
 }
+</script>
+
+<script>
+
+function openQuote(quoteNumber) {
+  window.open(`quote-editor.html?quote=${encodeURIComponent(quoteNumber)}`, "_blank");
+}
+  
 </script>
   
 </body>
