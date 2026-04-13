@@ -114,18 +114,18 @@
       referenceNumber: "REF-001",
       validity: new Date(new Date().setMonth(new Date().getMonth() + 1)).toLocaleDateString("en-US"),
 
-      let route = [
-  { code: "MIA", name: "Miami, USA" },
-  { code: "PTY", name: "Panama" },
-  { code: "GYE", name: "Guayaquil, Ecuador" }
-];
       airline: "TBD",
       transit: "TBD",
       frequency: "TBD",
       chargeableWeight: "0.00",
       notes: "Rates subject to space and final confirmation."
     };
-
+    let route = [
+  { code: "MIA", name: "Miami, USA" },
+  { code: "PTY", name: "Panama" },
+  { code: "GYE", name: "Guayaquil, Ecuador" }
+];
+    
     let charges = [
       { name: "A/F General", amountText: "$0.00 x Kg (Min $0.00)" },
       { name: "AWB", amountText: "$50.00" },
