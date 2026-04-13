@@ -113,12 +113,12 @@
       quoteNumber: "Q-001",
       referenceNumber: "REF-001",
       validity: new Date(new Date().setMonth(new Date().getMonth() + 1)).toLocaleDateString("en-US"),
-      originCode: "MIA",
-      originName: "Miami",
-      originCountry: "USA",
-      destinationCode: "GYE",
-      destinationName: "Guayaquil",
-      destinationCountry: "Ecuador",
+
+      let route = [
+  { code: "MIA", name: "Miami, USA" },
+  { code: "PTY", name: "Panama" },
+  { code: "GYE", name: "Guayaquil, Ecuador" }
+];
       airline: "TBD",
       transit: "TBD",
       frequency: "TBD",
@@ -177,39 +177,33 @@
               <input class="field-input" value="${escapeHtml(quoteData.validity)}" onchange="updateQuoteField('validity', this.value)">
             </div>
 
-            <div class="grid grid-cols-2 gap-3">
-              <div>
-                <label class="field-label">Origin Code</label>
-                <input class="field-input" value="${escapeHtml(quoteData.originCode)}" onchange="updateQuoteField('originCode', this.value)">
-              </div>
-              <div>
-                <label class="field-label">Destination Code</label>
-                <input class="field-input" value="${escapeHtml(quoteData.destinationCode)}" onchange="updateQuoteField('destinationCode', this.value)">
-              </div>
-            </div>
 
-            <div class="grid grid-cols-2 gap-3">
-              <div>
-                <label class="field-label">Origin Name</label>
-                <input class="field-input" value="${escapeHtml(quoteData.originName)}" onchange="updateQuoteField('originName', this.value)">
-              </div>
-              <div>
-                <label class="field-label">Destination Name</label>
-                <input class="field-input" value="${escapeHtml(quoteData.destinationName)}" onchange="updateQuoteField('destinationName', this.value)">
-              </div>
-            </div>
+            <div>
+  <div class="field-label">Route</div>
 
-            <div class="grid grid-cols-2 gap-3">
-              <div>
-                <label class="field-label">Origin Country</label>
-                <input class="field-input" value="${escapeHtml(quoteData.originCountry)}" onchange="updateQuoteField('originCountry', this.value)">
-              </div>
-              <div>
-                <label class="field-label">Destination Country</label>
-                <input class="field-input" value="${escapeHtml(quoteData.destinationCountry)}" onchange="updateQuoteField('destinationCountry', this.value)">
-              </div>
-            </div>
+  ${route.map((r, i) => `
+    <div class="flex gap-2 mb-2">
+      <input value="${r.code}" 
+        onchange="updateRoute(${i}, 'code', this.value)" 
+        class="field-input w-20">
 
+      <input value="${r.name}" 
+        onchange="updateRoute(${i}, 'name', this.value)" 
+        class="field-input flex-1">
+
+      <button onclick="removeStop(${i})">X</button>
+    </div>
+  `).join("")}
+
+  <button onclick="addStop()" class="preset-btn mt-2">
+    + Add Stop
+  </button>
+</div>
+
+
+
+
+            
             <div class="grid grid-cols-3 gap-3">
               <div>
                 <label class="field-label">Airline</label>
@@ -373,31 +367,37 @@
                 </tr>
 
                 <tr>
-                  <td style="padding-bottom:10px;">
-                    <table width="100%" style="text-align:center;">
-                      <tr>
-                        <td style="font-size:18px;font-weight:700;color:#222;">
-                          ${escapeHtml(quoteData.originCode)}
-                        </td>
-                        <td style="font-size:18px;font-weight:700;color:#0077c8;width:40px;">
-                          →
-                        </td>
-                        <td style="font-size:18px;font-weight:700;color:#222;">
-                          ${escapeHtml(quoteData.destinationCode)}
-                        </td>
-                      </tr>
-                      <tr>
-                        <td style="font-size:12px;color:#777;font-weight:400;padding-top:2px;">
-                          ${escapeHtml(quoteData.originName)}, ${escapeHtml(quoteData.originCountry)}
-                        </td>
-                        <td></td>
-                        <td style="font-size:12px;color:#777;font-weight:400;padding-top:2px;">
-                          ${escapeHtml(quoteData.destinationName)}, ${escapeHtml(quoteData.destinationCountry)}
-                        </td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
+  <td style="padding-bottom:10px;">
+    <table width="100%" style="text-align:center;">
+      <tr>
+        ${route.map((r, i) => `
+          <td style="font-size:18px;font-weight:700;color:#222;">
+            ${r.code}
+          </td>
+          ${i < route.length - 1 ? `
+            <td style="font-size:18px;color:#0077c8;width:30px;">
+              →
+            </td>
+          ` : ""}
+        `).join("")}
+      </tr>
+
+      <tr>
+        ${route.map((r, i) => `
+          <td style="font-size:12px;color:#777;">
+            ${r.name}
+          </td>
+          ${i < route.length - 1 ? `<td></td>` : ""}
+        `).join("")}
+      </tr>
+    </table>
+  </td>
+</tr>
+
+
+      
+
+           
 
                 <tr>
                   <td>
@@ -545,6 +545,26 @@
 
     renderTab();
     renderPreview();
+
+
+function addStop() {
+  route.push({ code: "", name: "" });
+  renderTab();
+  renderPreview();
+}
+
+function updateRoute(i, field, value) {
+  route[i][field] = value;
+  renderPreview();
+}
+
+function removeStop(i) {
+  route.splice(i, 1);
+  renderTab();
+  renderPreview();
+}
+
+    
   </script>
 
 </body>
