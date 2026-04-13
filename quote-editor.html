@@ -1,102 +1,551 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Quote Editor</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MIP Quote Editor</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      background: #0b1220;
+    }
+
+    .glass {
+      background: rgba(255,255,255,0.04);
+      backdrop-filter: blur(14px);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+    }
+
+    .tab-btn {
+      padding: 8px 12px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.06);
+      color: #d1d5db;
+      font-size: 14px;
+    }
+
+    .tab-btn.active {
+      background: rgba(59,130,246,0.18);
+      color: #60a5fa;
+    }
+
+    .field-label {
+      font-size: 12px;
+      color: #9ca3af;
+      margin-bottom: 4px;
+      display: block;
+    }
+
+    .field-input {
+      width: 100%;
+      padding: 8px 10px;
+      border-radius: 10px;
+      background: white;
+      color: #111827;
+      font-size: 14px;
+      border: 1px solid #d1d5db;
+    }
+
+    .preset-btn {
+      padding: 8px 10px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.06);
+      color: white;
+      font-size: 13px;
+      text-align: left;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .preset-btn:hover {
+      background: rgba(59,130,246,0.15);
+    }
+
+    .charge-row input {
+      min-width: 0;
+    }
+  </style>
 </head>
+<body class="text-white min-h-screen">
 
-<body class="bg-gray-900 text-white p-6">
+  <div class="flex h-screen overflow-hidden">
 
-<h1 class="text-xl mb-4">Quote Editor</h1>
-
-<div id="quoteInfo" class="mb-6"></div>
-
-<!-- CHARGES -->
-<div>
-  <h2 class="mb-2">Charges</h2>
-
-  <div id="chargesList" class="space-y-2"></div>
-
-  <button onclick="addCharge()" class="mt-3 bg-blue-500 px-3 py-1 rounded">
-    + Add Charge
-  </button>
-</div>
-
-<!-- SAVE -->
-<button onclick="saveQuote()" class="mt-6 bg-green-500 px-4 py-2 rounded">
-  Save
-</button>
-
-<script>
-const urlParams = new URLSearchParams(window.location.search);
-const quoteNumber = urlParams.get("quote");
-
-let quoteData = {};
-let charges = [];
-
-async function loadQuote() {
-  const res = await fetch(`https://n8n-n10ai.onrender.com/webhook/get-single-quote?quote=${quoteNumber}`);
-  const data = await res.json();
-
-  quoteData = data;
-  charges = data.charges || [];
-
-  render();
-}
-
-function render() {
-  document.getElementById("quoteInfo").innerHTML = `
-    <div>Quote: ${quoteData.quoteNumber}</div>
-    <div>${quoteData.origin} → ${quoteData.destination}</div>
-  `;
-
-  renderCharges();
-}
-
-function renderCharges() {
-  const container = document.getElementById("chargesList");
-  container.innerHTML = "";
-
-  charges.forEach((c, i) => {
-    container.innerHTML += `
-      <div class="flex gap-2">
-        <input value="${c.name}" onchange="updateCharge(${i}, 'name', this.value)" class="text-black px-1" />
-        <input value="${c.amount}" onchange="updateCharge(${i}, 'amount', this.value)" class="text-black px-1 w-20" />
-        <button onclick="removeCharge(${i})" class="text-red-400">X</button>
+    <!-- LEFT PANEL -->
+    <div class="w-full md:w-[380px] shrink-0 glass m-4 p-4 overflow-y-auto">
+      <div class="flex items-center justify-between mb-4">
+        <h1 class="text-xl font-semibold">Quote Builder</h1>
+        <button
+          onclick="resetQuote()"
+          class="text-xs px-3 py-2 rounded-lg bg-red-500/20 text-red-300 border border-red-400/20"
+        >
+          Reset
+        </button>
       </div>
-    `;
-  });
-}
 
-function addCharge() {
-  charges.push({ name: "New Charge", amount: 0 });
-  renderCharges();
-}
+      <div class="flex gap-2 mb-4">
+        <button id="tab-details-btn" class="tab-btn active" onclick="setTab('details')">Details</button>
+        <button id="tab-charges-btn" class="tab-btn" onclick="setTab('charges')">Charges</button>
+        <button id="tab-notes-btn" class="tab-btn" onclick="setTab('notes')">Notes</button>
+      </div>
 
-function updateCharge(i, field, value) {
-  charges[i][field] = value;
-}
+      <div id="tabContent"></div>
+    </div>
 
-function removeCharge(i) {
-  charges.splice(i, 1);
-  renderCharges();
-}
+    <!-- RIGHT PANEL -->
+    <div class="flex-1 overflow-y-auto p-4 md:p-8">
+      <div class="mb-4 flex items-center justify-between">
+        <h2 class="text-lg font-medium text-gray-200">Live Preview</h2>
+      </div>
 
-async function saveQuote() {
-  await fetch("https://n8n-n10ai.onrender.com/webhook/update-quote-full", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      quoteNumber,
-      charges
-    })
-  });
+      <div class="bg-[#e5e7eb] rounded-2xl p-4 md:p-8">
+        <div id="quotePreview"></div>
+      </div>
+    </div>
 
-  alert("Saved!");
-}
+  </div>
 
-loadQuote();
-</script>
+  <script>
+    let currentTab = "details";
+
+    let quoteData = {
+      quoteTitle: "Air Freight Quote",
+      customerName: "Customer",
+      quoteNumber: "Q-001",
+      referenceNumber: "REF-001",
+      validity: new Date(new Date().setMonth(new Date().getMonth() + 1)).toLocaleDateString("en-US"),
+      originCode: "MIA",
+      originName: "Miami",
+      originCountry: "USA",
+      destinationCode: "GYE",
+      destinationName: "Guayaquil",
+      destinationCountry: "Ecuador",
+      airline: "TBD",
+      transit: "TBD",
+      frequency: "TBD",
+      chargeableWeight: "0.00",
+      notes: "Rates subject to space and final confirmation."
+    };
+
+    let charges = [
+      { name: "A/F General", amountText: "$0.00 x Kg (Min $0.00)" },
+      { name: "AWB", amountText: "$50.00" },
+      { name: "AES", amountText: "$25.00" },
+      { name: "Handling", amountText: "$65.00" }
+    ];
+
+    function setTab(tab) {
+      currentTab = tab;
+
+      document.getElementById("tab-details-btn").classList.remove("active");
+      document.getElementById("tab-charges-btn").classList.remove("active");
+      document.getElementById("tab-notes-btn").classList.remove("active");
+
+      document.getElementById(`tab-${tab}-btn`).classList.add("active");
+
+      renderTab();
+    }
+
+    function renderTab() {
+      const container = document.getElementById("tabContent");
+
+      if (currentTab === "details") {
+        container.innerHTML = `
+          <div class="space-y-4">
+            <div>
+              <label class="field-label">Quote Title</label>
+              <input class="field-input" value="${escapeHtml(quoteData.quoteTitle)}" onchange="updateQuoteField('quoteTitle', this.value)">
+            </div>
+
+            <div>
+              <label class="field-label">Customer Name</label>
+              <input class="field-input" value="${escapeHtml(quoteData.customerName)}" onchange="updateQuoteField('customerName', this.value)">
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="field-label">Quote #</label>
+                <input class="field-input" value="${escapeHtml(quoteData.quoteNumber)}" onchange="updateQuoteField('quoteNumber', this.value)">
+              </div>
+              <div>
+                <label class="field-label">Reference #</label>
+                <input class="field-input" value="${escapeHtml(quoteData.referenceNumber)}" onchange="updateQuoteField('referenceNumber', this.value)">
+              </div>
+            </div>
+
+            <div>
+              <label class="field-label">Validity</label>
+              <input class="field-input" value="${escapeHtml(quoteData.validity)}" onchange="updateQuoteField('validity', this.value)">
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="field-label">Origin Code</label>
+                <input class="field-input" value="${escapeHtml(quoteData.originCode)}" onchange="updateQuoteField('originCode', this.value)">
+              </div>
+              <div>
+                <label class="field-label">Destination Code</label>
+                <input class="field-input" value="${escapeHtml(quoteData.destinationCode)}" onchange="updateQuoteField('destinationCode', this.value)">
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="field-label">Origin Name</label>
+                <input class="field-input" value="${escapeHtml(quoteData.originName)}" onchange="updateQuoteField('originName', this.value)">
+              </div>
+              <div>
+                <label class="field-label">Destination Name</label>
+                <input class="field-input" value="${escapeHtml(quoteData.destinationName)}" onchange="updateQuoteField('destinationName', this.value)">
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="field-label">Origin Country</label>
+                <input class="field-input" value="${escapeHtml(quoteData.originCountry)}" onchange="updateQuoteField('originCountry', this.value)">
+              </div>
+              <div>
+                <label class="field-label">Destination Country</label>
+                <input class="field-input" value="${escapeHtml(quoteData.destinationCountry)}" onchange="updateQuoteField('destinationCountry', this.value)">
+              </div>
+            </div>
+
+            <div class="grid grid-cols-3 gap-3">
+              <div>
+                <label class="field-label">Airline</label>
+                <input class="field-input" value="${escapeHtml(quoteData.airline)}" onchange="updateQuoteField('airline', this.value)">
+              </div>
+              <div>
+                <label class="field-label">Transit</label>
+                <input class="field-input" value="${escapeHtml(quoteData.transit)}" onchange="updateQuoteField('transit', this.value)">
+              </div>
+              <div>
+                <label class="field-label">Frequency</label>
+                <input class="field-input" value="${escapeHtml(quoteData.frequency)}" onchange="updateQuoteField('frequency', this.value)">
+              </div>
+            </div>
+
+            <div>
+              <label class="field-label">Chargeable Weight</label>
+              <input class="field-input" value="${escapeHtml(quoteData.chargeableWeight)}" onchange="updateQuoteField('chargeableWeight', this.value)">
+            </div>
+          </div>
+        `;
+      }
+
+      if (currentTab === "charges") {
+        container.innerHTML = `
+          <div class="mb-4">
+            <div class="text-sm text-gray-300 mb-2">Preset Charges</div>
+            <div class="grid grid-cols-2 gap-2">
+              <button class="preset-btn" onclick="addPreset('A/F General', '$0.00 x Kg (Min $0.00)')">A/F General</button>
+              <button class="preset-btn" onclick="addPreset('A/F Hazmat', '$0.00 x Kg (Min $0.00) + $0.00 UN fee')">A/F Hazmat</button>
+              <button class="preset-btn" onclick="addPreset('AWB', '$50.00')">AWB</button>
+              <button class="preset-btn" onclick="addPreset('AES', '$25.00')">AES</button>
+              <button class="preset-btn" onclick="addPreset('Handling', '$65.00')">Handling</button>
+              <button class="preset-btn" onclick="addPreset('A/T General', '$0.08 x Kgs (Min $65)')">A/T General</button>
+              <button class="preset-btn" onclick="addPreset('A/T Hazmat', '$0.10 x Kgs (Min $85) + $50 fee')">A/T Hazmat</button>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between mb-3">
+            <div class="text-sm text-gray-300">Editable Charges</div>
+            <button onclick="addEmptyCharge()" class="text-xs px-3 py-2 rounded-lg bg-blue-500/20 text-blue-300 border border-blue-400/20">
+              + Add Custom
+            </button>
+          </div>
+
+          <div class="space-y-2">
+            ${charges.map((charge, index) => `
+              <div class="charge-row grid grid-cols-[1fr_1fr_auto] gap-2 items-center">
+                <input
+                  class="field-input"
+                  value="${escapeHtml(charge.name)}"
+                  onchange="updateCharge(${index}, 'name', this.value)"
+                />
+                <input
+                  class="field-input"
+                  value="${escapeHtml(charge.amountText)}"
+                  onchange="updateCharge(${index}, 'amountText', this.value)"
+                />
+                <button
+                  onclick="removeCharge(${index})"
+                  class="px-3 py-2 rounded-lg bg-red-500/20 text-red-300 border border-red-400/20 text-xs"
+                >
+                  X
+                </button>
+              </div>
+            `).join("")}
+          </div>
+        `;
+      }
+
+      if (currentTab === "notes") {
+        container.innerHTML = `
+          <div class="space-y-4">
+            <div>
+              <label class="field-label">Intro Text</label>
+              <textarea class="field-input min-h-[100px]" onchange="updateQuoteField('introText', this.value)">${escapeHtml(quoteData.introText || "Hola Customer,\\n\\nTe adjunto la cotización abajo:")}</textarea>
+            </div>
+
+            <div>
+              <label class="field-label">Internal / Footer Notes</label>
+              <textarea class="field-input min-h-[120px]" onchange="updateQuoteField('notes', this.value)">${escapeHtml(quoteData.notes)}</textarea>
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    function updateQuoteField(field, value) {
+      quoteData[field] = value;
+      renderPreview();
+    }
+
+    function addPreset(name, amountText) {
+      charges.push({ name, amountText });
+      renderTab();
+      renderPreview();
+    }
+
+    function addEmptyCharge() {
+      charges.push({ name: "New Charge", amountText: "$0.00" });
+      renderTab();
+      renderPreview();
+    }
+
+    function updateCharge(index, field, value) {
+      charges[index][field] = value;
+      renderPreview();
+    }
+
+    function removeCharge(index) {
+      charges.splice(index, 1);
+      renderTab();
+      renderPreview();
+    }
+
+    function resetQuote() {
+      location.reload();
+    }
+
+    function extractNumericAmount(text) {
+      const matches = String(text || "").match(/-?\d+(\.\d+)?/g);
+      if (!matches || matches.length === 0) return 0;
+      return Number(matches[0]) || 0;
+    }
+
+    function formatMoney(value) {
+      return `$${Number(value).toFixed(2)}`;
+    }
+
+    function renderPreview() {
+      const total = charges.reduce((sum, charge) => {
+        return sum + extractNumericAmount(charge.amountText);
+      }, 0);
+
+      const intro = (quoteData.introText || "Hola Customer,\n\nTe adjunto la cotización abajo:")
+        .replaceAll("\n", "<br>");
+
+      document.getElementById("quotePreview").innerHTML = `
+        <table width="100%" cellpadding="0" cellspacing="0" style="padding:30px 0;background:#f4f6f9;font-family:Arial,Helvetica,sans-serif;color:#222;">
+          <tr>
+            <td align="center">
+
+              <table width="520" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:10px;padding:30px;box-shadow:0 4px 14px rgba(0,0,0,0.08);">
+
+                <tr>
+                  <td style="text-align:center;padding-bottom:20px;">
+                    <img src="https://raw.githubusercontent.com/N10ai/mip-tools/main/Untitled%20design%20-%201.png" width="110">
+                  </td>
+                </tr>
+
+                <tr>
+                  <td style="font-size:22px;font-weight:700;color:#0077c8;text-align:center;padding-bottom:15px;">
+                    ${escapeHtml(quoteData.quoteTitle)}
+                  </td>
+                </tr>
+
+                <tr>
+                  <td style="font-size:14px;color:#444;padding-bottom:20px;">
+                    ${intro.replace("Customer", escapeHtml(quoteData.customerName))}
+                  </td>
+                </tr>
+
+                <tr>
+                  <td style="padding-bottom:10px;">
+                    <table width="100%" style="text-align:center;">
+                      <tr>
+                        <td style="font-size:18px;font-weight:700;color:#222;">
+                          ${escapeHtml(quoteData.originCode)}
+                        </td>
+                        <td style="font-size:18px;font-weight:700;color:#0077c8;width:40px;">
+                          →
+                        </td>
+                        <td style="font-size:18px;font-weight:700;color:#222;">
+                          ${escapeHtml(quoteData.destinationCode)}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="font-size:12px;color:#777;font-weight:400;padding-top:2px;">
+                          ${escapeHtml(quoteData.originName)}, ${escapeHtml(quoteData.originCountry)}
+                        </td>
+                        <td></td>
+                        <td style="font-size:12px;color:#777;font-weight:400;padding-top:2px;">
+                          ${escapeHtml(quoteData.destinationName)}, ${escapeHtml(quoteData.destinationCountry)}
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+
+                <tr>
+                  <td>
+                    <table width="100%" cellpadding="10" cellspacing="0" style="border:1px solid #e4e4e4;border-radius:6px;background:#f9fafb;table-layout:fixed;">
+                      <tr>
+                        <td style="width:50%;font-size:13px;color:#555;"><strong>Quote #</strong></td>
+                        <td style="width:50%;text-align:right;font-weight:700;">${escapeHtml(quoteData.quoteNumber)}</td>
+                      </tr>
+                      <tr>
+                        <td style="width:50%;font-size:13px;color:#555;"><strong>Reference #</strong></td>
+                        <td style="width:50%;text-align:right;font-weight:700;">${escapeHtml(quoteData.referenceNumber)}</td>
+                      </tr>
+                      <tr>
+                        <td style="width:50%;font-size:13px;color:#555;"><strong>Validity</strong></td>
+                        <td style="width:50%;text-align:right;font-weight:700;white-space:nowrap;">${escapeHtml(quoteData.validity)}</td>
+                      </tr>
+                      <tr>
+                        <td style="width:50%;font-size:13px;color:#555;"><strong>Airline</strong></td>
+                        <td style="width:50%;text-align:right;font-weight:700;">${escapeHtml(quoteData.airline)}</td>
+                      </tr>
+                      <tr>
+                        <td style="width:50%;font-size:13px;color:#555;"><strong>Transit</strong></td>
+                        <td style="width:50%;text-align:right;font-weight:700;">${escapeHtml(quoteData.transit)}</td>
+                      </tr>
+                      <tr>
+                        <td style="width:50%;font-size:13px;color:#555;"><strong>Frequency</strong></td>
+                        <td style="width:50%;text-align:right;font-weight:700;">${escapeHtml(quoteData.frequency)}</td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+
+                <tr>
+                  <td style="padding-top:20px;">
+                    <table width="100%" cellpadding="10" cellspacing="0" style="border:1px solid #e4e4e4;border-radius:6px;background:#ffffff;table-layout:fixed;">
+                      ${charges.map((charge, index) => `
+                        <tr>
+                          <td style="width:50%;"><strong>${escapeHtml(charge.name)}</strong></td>
+                          <td style="width:50%;text-align:right;">${escapeHtml(charge.amountText)}</td>
+                        </tr>
+                        ${index === 1 ? `
+                          <tr>
+                            <td colspan="2" style="padding:8px 0;">
+                              <div style="height:2px;background:#0077c8;width:100%;border-radius:2px;"></div>
+                            </td>
+                          </tr>
+                        ` : ""}
+                      `).join("")}
+                    </table>
+                  </td>
+                </tr>
+
+                <tr>
+                  <td style="padding-top:20px;">
+                    <table width="100%" cellpadding="10" cellspacing="0" style="border:1px solid #e4e4e4;border-radius:6px;background:#ffffff;table-layout:fixed;">
+                      <tr>
+                        <td><strong>Chargeable weight:</strong></td>
+                        <td align="right">${escapeHtml(quoteData.chargeableWeight)}</td>
+                      </tr>
+                      <tr>
+                        <td><strong>Total:</strong></td>
+                        <td align="right">${formatMoney(total)}</td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+
+                <tr>
+                  <td style="padding-top:30px;">
+                    <table width="100%">
+                      <tr>
+                        <td style="border-top:1px solid #e4e4e4;"></td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+
+              </table>
+
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="max-width:420px;text-align:center;font-family:Arial, Helvetica, sans-serif;color:#222;margin-top:20px;">
+                <tr>
+                  <td style="font-size:16px;font-weight:700;color:#0077c8;">
+                    Pricing Team
+                  </td>
+                </tr>
+                <tr><td style="height:8px;"></td></tr>
+                <tr>
+                  <td style="font-size:14px;color:#555;">
+                    <span style="font-weight:700;color:#0077c8;">M</span>
+                    <a href="tel:+17864275348" style="color:#555;text-decoration:none;">+1 (786) 427-5348</a>
+                  </td>
+                </tr>
+                <tr><td style="height:6px;"></td></tr>
+                <tr>
+                  <td style="font-size:14px;color:#555;">
+                    <span style="font-weight:700;color:#0077c8;">E</span>
+                    <a href="mailto:pricing@mipcargoexp.com" style="color:#555;text-decoration:none;">pricing@mipcargoexp.com</a>
+                    &nbsp;&nbsp;
+                    <span style="font-weight:700;color:#0077c8;">W</span>
+                    <a href="https://www.mipcargoexp.com" target="_blank" style="color:#555;text-decoration:none;">www.mipcargoexp.com</a>
+                  </td>
+                </tr>
+                <tr><td style="height:14px;"></td></tr>
+                <tr>
+                  <td align="center">
+                    <img src="https://raw.githubusercontent.com/N10ai/mip-tools/main/Untitled%20design%20-%201.png"
+                      alt="MIP Cargo Express"
+                      width="50"
+                      style="display:block;margin:auto;border:0;">
+                  </td>
+                </tr>
+                <tr><td style="height:10px;"></td></tr>
+                <tr>
+                  <td style="font-size:13px;">
+                    <a href="https://maps.google.com/?q=1350%20NW%20129th%20Avenue%20Suite%20100%20Miami%2C%20FL%2033182"
+                      target="_blank"
+                      style="color:#0077c8;text-decoration:none;">
+                      1350 NW 129th Avenue Suite 100<br>
+                      Miami, FL 33182
+                    </a>
+                  </td>
+                </tr>
+                <tr><td style="height:12px;"></td></tr>
+                <tr>
+                  <td style="font-size:11px;color:#6b6b6b;line-height:1.4;">
+                    <strong>Disclaimer:</strong> ${escapeHtml(quoteData.notes)}
+                  </td>
+                </tr>
+              </table>
+
+            </td>
+          </tr>
+        </table>
+      `;
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    renderTab();
+    renderPreview();
+  </script>
 
 </body>
 </html>
