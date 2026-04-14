@@ -312,12 +312,12 @@ let cargo = {
 
           <div class="space-y-2">
             ${charges.map((charge, index) => `
-              <div class="charge-row grid grid-cols-[1fr_1fr_auto] gap-2 items-center">
+              <div class="charge-row grid grid-cols-[1fr_1fr_auto] gap-2 items-center">             
                 <input
-                  class="field-input"
-                  value="${escapeHtml(charge.name)}"
-                  onchange="updateCharge(${index}, 'name', this.value)"
-                
+  class="field-input"
+  value="${escapeHtml(charge.name)}"
+  onchange="updateCharge(${index}, 'name', this.value)">
+  
                 <button
                   onclick="removeCharge(${index})"
                   class="px-3 py-2 rounded-lg bg-red-500/20 text-red-300 border border-red-400/20 text-xs"
@@ -404,7 +404,7 @@ const total = calculateTotal();
               <table width="520" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:10px;padding:30px;box-shadow:0 4px 14px rgba(0,0,0,0.08);">
 
                 <tr>
-                  <td style="text-align:center;padding-bottom:20px;">
+                  <td style="text-align:center;padding-bottom:25px;">
                     <img src="https://raw.githubusercontent.com/N10ai/mip-tools/main/Untitled%20design%20-%201.png" width="110">
                   </td>
                 </tr>
@@ -416,7 +416,7 @@ const total = calculateTotal();
                 </tr>
 
                 <tr>
-                  <td style="font-size:14px;color:#444;padding-bottom:20px;">
+         <td style="font-size:14px;color:#444;padding:15px 20px 25px 20px; line-height:1.5;">
                     ${intro.replace("Customer", escapeHtml(quoteData.customerName))}
                   </td>
                 </tr>
@@ -512,7 +512,7 @@ const total = calculateTotal();
                     <table width="100%" cellpadding="10" cellspacing="0" style="border:1px solid #e4e4e4;border-radius:6px;background:#ffffff;table-layout:fixed;">
                       <tr>
                         <td><strong>Chargeable weight:</strong></td>
-                        <td align="right">${cargo.chargeableWeight}</td>
+                        <td align="right">${cargo.chargeableWeight.toFixed(2)} ${cargo.unit}</td>
                       </tr>
                       <tr>
                         <td><strong>Total:</strong></td>
@@ -669,6 +669,37 @@ function updateUnit(newUnit) {
   const value = weight * charge.rate;
 
   return Math.max(value, charge.min || 0);
+}
+
+
+function calculateTotal() {
+  return charges.reduce((sum, c) => {
+
+    if (c.type === "freight") {
+      return sum + calculateFreight(c);
+    }
+
+    if (c.type === "fixed") {
+      return sum + (c.amount || 0);
+    }
+
+    return sum;
+
+  }, 0);
+}
+
+function formatCharge(charge) {
+
+  if (charge.type === "freight") {
+    const total = calculateFreight(charge);
+    return `$${charge.rate} x ${cargo.unit} (Min $${charge.min}) → $${total.toFixed(2)}`;
+  }
+
+  if (charge.type === "fixed") {
+    return `$${charge.amount}`;
+  }
+
+  return "-";
 }
     
   </script>
