@@ -153,6 +153,42 @@ let cargo = {
     amount: 65
   }
 ];
+
+let presets = [
+  {
+    name: "A/F General",
+    description: "Air freight per kg",
+    type: "variable",
+    basis: "weight",
+    unit: "kg",
+    rate: 0.08,
+    min: 65,
+    amount: null
+  },
+  {
+    name: "AWB",
+    description: "Air waybill fee",
+    type: "flat",
+    basis: "fixed",
+    unit: null,
+    rate: null,
+    min: null,
+    amount: 50
+  },
+  {
+    name: "Handling",
+    description: "Warehouse / airline handling",
+    type: "flat",
+    basis: "fixed",
+    unit: null,
+    rate: null,
+    min: null,
+    amount: 65
+  }
+];
+
+
+    
     function setTab(tab) {
       currentTab = tab;
 
@@ -288,47 +324,112 @@ let cargo = {
         `;
       }
 
-      if (currentTab === "charges") {
-        container.innerHTML = `
-          <div class="mb-4">
-            <div class="text-sm text-gray-300 mb-2">Preset Charges</div>
-            <div class="grid grid-cols-2 gap-2">
-              <button class="preset-btn" onclick="addPreset('A/F General', '$0.00 x Kg (Min $0.00)')">A/F General</button>
-              <button class="preset-btn" onclick="addPreset('A/F Hazmat', '$0.00 x Kg (Min $0.00) + $0.00 UN fee')">A/F Hazmat</button>
-              <button class="preset-btn" onclick="addPreset('AWB', '$50.00')">AWB</button>
-              <button class="preset-btn" onclick="addPreset('AES', '$25.00')">AES</button>
-              <button class="preset-btn" onclick="addPreset('Handling', '$65.00')">Handling</button>
-              <button class="preset-btn" onclick="addPreset('A/T General', '$0.08 x Kgs (Min $65)')">A/T General</button>
-              <button class="preset-btn" onclick="addPreset('A/T Hazmat', '$0.10 x Kgs (Min $85) + $50 fee')">A/T Hazmat</button>
+if (currentTab === "charges") {
+  container.innerHTML = `
+    <div class="mb-4 p-3 border border-gray-600 rounded">
+      <div class="text-sm text-gray-300 mb-2">Create Preset</div>
+
+      <input id="presetName" placeholder="Charge Name" class="field-input mb-2">
+
+      <input id="presetDesc" placeholder="Description" class="field-input mb-2">
+
+      <select id="presetType" class="field-input mb-2">
+        <option value="flat">Flat Fee</option>
+        <option value="per_kg">Per KG</option>
+        <option value="per_lb">Per LB</option>
+        <option value="per_cbm">Per CBM</option>
+        <option value="per_piece">Per Piece</option>
+        <option value="other">Other</option>
+      </select>
+
+      <input id="presetRate" placeholder="Rate / Amount ($)" class="field-input mb-2">
+
+      <input id="presetMin" placeholder="Minimum ($ optional)" class="field-input mb-2">
+
+      <button onclick="savePreset()" class="w-full text-sm px-3 py-2 rounded-lg bg-blue-500/20 text-blue-300 border border-blue-400/20">
+        Save Preset
+      </button>
+    </div>
+
+    <div class="mb-4">
+      <div class="text-sm text-gray-300 mb-2">Preset Charges</div>
+
+      <div class="grid grid-cols-2 gap-2">
+        ${presets.map((preset, i) => `
+          <button class="preset-btn" onclick="addPresetByIndex(${i})">
+            <div class="font-medium">${escapeHtml(preset.name)}</div>
+            <div class="text-xs text-gray-300">${escapeHtml(preset.description || "")}</div>
+          </button>
+        `).join("")}
+      </div>
+    </div>
+
+    <div class="flex items-center justify-between mb-3">
+      <div class="text-sm text-gray-300">Editable Charges</div>
+      <button onclick="addEmptyCharge()" class="text-xs px-3 py-2 rounded-lg bg-blue-500/20 text-blue-300 border border-blue-400/20">
+        + Add Custom
+      </button>
+    </div>
+
+    <div class="space-y-2">
+      ${charges.map((charge, index) => `
+        <div class="glass p-3 rounded-xl">
+          <div class="grid grid-cols-1 gap-2 mb-2">
+            <input
+              class="field-input"
+              value="${escapeHtml(charge.name || "")}"
+              onchange="updateCharge(${index}, 'name', this.value)"
+              placeholder="Charge name">
+
+            <input
+              class="field-input"
+              value="${escapeHtml(charge.description || "")}"
+              onchange="updateCharge(${index}, 'description', this.value)"
+              placeholder="Description">
+          </div>
+
+          <div class="grid grid-cols-2 gap-2 mb-2">
+            <select class="field-input" onchange="changeChargeType(${index}, this.value)">
+              <option value="fixed" ${charge.type === "fixed" ? "selected" : ""}>Flat Fee</option>
+              <option value="freight" ${charge.type === "freight" ? "selected" : ""}>Variable</option>
+            </select>
+
+            <input
+              class="field-input"
+              value="${charge.type === "fixed" ? (charge.amount ?? "") : (charge.rate ?? "")}"
+              onchange="updateChargeValue(${index}, this.value)"
+              placeholder="${charge.type === "fixed" ? "Amount" : "Rate"}">
+          </div>
+
+          ${charge.type === "freight" ? `
+            <div class="grid grid-cols-2 gap-2 mb-2">
+              <select class="field-input" onchange="updateCharge(${index}, 'unit', this.value)">
+                <option value="kg" ${charge.unit === "kg" ? "selected" : ""}>kg</option>
+                <option value="lb" ${charge.unit === "lb" ? "selected" : ""}>lb</option>
+                <option value="cbm" ${charge.unit === "cbm" ? "selected" : ""}>cbm</option>
+                <option value="unit" ${charge.unit === "unit" ? "selected" : ""}>piece</option>
+              </select>
+
+              <input
+                class="field-input"
+                value="${charge.min ?? ""}"
+                onchange="updateCharge(${index}, 'min', Number(this.value) || 0)"
+                placeholder="Minimum">
             </div>
-          </div>
+          ` : ""}
 
-          <div class="flex items-center justify-between mb-3">
-            <div class="text-sm text-gray-300">Editable Charges</div>
-            <button onclick="addEmptyCharge()" class="text-xs px-3 py-2 rounded-lg bg-blue-500/20 text-blue-300 border border-blue-400/20">
-              + Add Custom
-            </button>
-          </div>
+          <button
+            onclick="removeCharge(${index})"
+            class="px-3 py-2 rounded-lg bg-red-500/20 text-red-300 border border-red-400/20 text-xs">
+            Remove
+          </button>
+        </div>
+      `).join("")}
+    </div>
+  `;
+}
 
-          <div class="space-y-2">
-            ${charges.map((charge, index) => `
-              <div class="charge-row grid grid-cols-[1fr_1fr_auto] gap-2 items-center">             
-                <input
-  class="field-input"
-  value="${escapeHtml(charge.name)}"
-  onchange="updateCharge(${index}, 'name', this.value)">
-  
-                <button
-                  onclick="removeCharge(${index})"
-                  class="px-3 py-2 rounded-lg bg-red-500/20 text-red-300 border border-red-400/20 text-xs"
-                >
-                  X
-                </button>
-              </div>
-            `).join("")}
-          </div>
-        `;
-      }
+      
 
       if (currentTab === "notes") {
         container.innerHTML = `
@@ -352,17 +453,46 @@ let cargo = {
       renderPreview();
     }
 
-    function addPreset(name, amountText) {
-      charges.push({ name, amountText });
-      renderTab();
-      renderPreview();
-    }
+function addPresetByIndex(index) {
+  const preset = presets[index];
 
-    function addEmptyCharge() {
-      charges.push({ name: "New Charge", amountText: "$0.00" });
-      renderTab();
-      renderPreview();
-    }
+  let newCharge;
+
+  if (preset.type === "flat") {
+    newCharge = {
+      name: preset.name,
+      description: preset.description || "",
+      type: "fixed",
+      amount: preset.amount || 0
+    };
+  } else {
+    newCharge = {
+      name: preset.name,
+      description: preset.description || "",
+      type: "freight",
+      basis: preset.basis || "weight",
+      unit: preset.unit || "kg",
+      rate: preset.rate || 0,
+      min: preset.min || 0
+    };
+  }
+
+  charges.push(newCharge);
+  renderTab();
+  renderPreview();
+}
+    
+
+function addEmptyCharge() {
+  charges.push({
+    name: "New Charge",
+    description: "",
+    type: "fixed",
+    amount: 0
+  });
+  renderTab();
+  renderPreview();
+}
 
     function updateCharge(index, field, value) {
       charges[index][field] = value;
@@ -498,7 +628,12 @@ const total = calculateTotal();
                     <table width="100%" cellpadding="10" cellspacing="0" style="border:1px solid #e4e4e4;border-radius:6px;background:#ffffff;table-layout:fixed;">
                      ${charges.map((charge, index) => `
   <tr>
-    <td><strong>${escapeHtml(charge.name)}</strong></td>
+<td>
+  <strong>${escapeHtml(charge.name)}</strong>
+  <div style="font-size:11px;color:#777;margin-top:2px;">
+    ${escapeHtml(charge.description || "")}
+  </div>
+</td>
     <td align="right">${formatCharge(charge)}</td>
   </tr>
 
@@ -697,18 +832,120 @@ function calculateTotal() {
 }
 
 function formatCharge(charge) {
-
   if (charge.type === "freight") {
     const total = calculateFreight(charge);
-    return `$${charge.rate} x ${cargo.unit} (Min $${charge.min}) → $${total.toFixed(2)}`;
+
+    const unitLabel = charge.unit || cargo.unit;
+    const minText = charge.min ? ` (Min $${charge.min})` : "";
+
+    return `$${Number(charge.rate || 0).toFixed(2)} / ${unitLabel}${minText} → $${total.toFixed(2)}`;
   }
 
   if (charge.type === "fixed") {
-    return `$${charge.amount}`;
+    return `$${Number(charge.amount || 0).toFixed(2)}`;
   }
 
   return "-";
 }
+
+
+    
+    function savePreset() {
+  const name = document.getElementById("presetName").value.trim();
+  const description = document.getElementById("presetDesc").value.trim();
+  const type = document.getElementById("presetType").value;
+  const rateOrAmount = Number(document.getElementById("presetRate").value) || 0;
+  const min = Number(document.getElementById("presetMin").value) || 0;
+
+  if (!name) return;
+
+  let preset = {
+    name,
+    description
+  };
+
+  if (type === "flat") {
+    preset.type = "flat";
+    preset.basis = "fixed";
+    preset.unit = null;
+    preset.rate = null;
+    preset.min = null;
+    preset.amount = rateOrAmount;
+  } else if (type === "per_kg") {
+    preset.type = "variable";
+    preset.basis = "weight";
+    preset.unit = "kg";
+    preset.rate = rateOrAmount;
+    preset.min = min;
+    preset.amount = null;
+  } else if (type === "per_lb") {
+    preset.type = "variable";
+    preset.basis = "weight";
+    preset.unit = "lb";
+    preset.rate = rateOrAmount;
+    preset.min = min;
+    preset.amount = null;
+  } else if (type === "per_cbm") {
+    preset.type = "variable";
+    preset.basis = "volume";
+    preset.unit = "cbm";
+    preset.rate = rateOrAmount;
+    preset.min = min;
+    preset.amount = null;
+  } else if (type === "per_piece") {
+    preset.type = "variable";
+    preset.basis = "piece";
+    preset.unit = "unit";
+    preset.rate = rateOrAmount;
+    preset.min = min;
+    preset.amount = null;
+  } else {
+    preset.type = "flat";
+    preset.basis = "fixed";
+    preset.unit = null;
+    preset.rate = null;
+    preset.min = null;
+    preset.amount = rateOrAmount;
+  }
+
+  presets.push(preset);
+  renderTab();
+}
+
+
+    
+
+    function changeChargeType(index, newType) {
+  if (newType === "fixed") {
+    charges[index].type = "fixed";
+    charges[index].amount = charges[index].amount ?? 0;
+    delete charges[index].rate;
+    delete charges[index].min;
+    delete charges[index].unit;
+  } else {
+    charges[index].type = "freight";
+    charges[index].rate = charges[index].rate ?? 0;
+    charges[index].min = charges[index].min ?? 0;
+    charges[index].unit = charges[index].unit ?? "kg";
+    delete charges[index].amount;
+  }
+
+  renderTab();
+  renderPreview();
+}
+
+function updateChargeValue(index, value) {
+  const numericValue = Number(value) || 0;
+
+  if (charges[index].type === "fixed") {
+    charges[index].amount = numericValue;
+  } else {
+    charges[index].rate = numericValue;
+  }
+
+  renderPreview();
+}
+
     
   </script>
 
