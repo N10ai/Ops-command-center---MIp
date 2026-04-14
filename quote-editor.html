@@ -129,17 +129,30 @@
 let cargo = {
   grossWeight: 0,
   volumetricWeight: 0,
-  chargeableWeight: 0
+  chargeableWeight: 0,
+  unit: "kg" // 🔥 NEW
 };
     
     
-    let charges = [
-      { name: "A/F General", amountText: "$0.00 x Kg (Min $0.00)" },
-      { name: "AWB", amountText: "$50.00" },
-      { name: "AES", amountText: "$25.00" },
-      { name: "Handling", amountText: "$65.00" }
-    ];
-
+  let charges = [
+  {
+    name: "A/F General",
+    type: "freight",
+    rate: 0.08,
+    min: 65,
+    unit: "kg"
+  },
+  {
+    name: "AWB",
+    type: "fixed",
+    amount: 50
+  },
+  {
+    name: "Handling",
+    type: "fixed",
+    amount: 65
+  }
+];
     function setTab(tab) {
       currentTab = tab;
 
@@ -227,6 +240,19 @@ let cargo = {
             </div>
 
 <div>
+  <label class="field-label">Unit</label>
+
+  <select 
+    class="field-input"
+    onchange="updateUnit(this.value)">
+
+    <option value="kg" ${cargo.unit === "kg" ? "selected" : ""}>kg</option>
+    <option value="lb" ${cargo.unit === "lb" ? "selected" : ""}>lb</option>
+
+  </select>
+</div>
+
+<div>
   <div class="field-label">Cargo Details</div>
 
   <div class="grid grid-cols-3 gap-2">
@@ -253,7 +279,7 @@ let cargo = {
       <label class="field-label">Chargeable</label>
       <input 
         class="field-input"
-        value="${cargo.chargeableWeight}"
+        value="${cargo.chargeableWeight.toFixed(2)} ${cargo.unit}"
         disabled>
     </div>
 
@@ -291,12 +317,7 @@ let cargo = {
                   class="field-input"
                   value="${escapeHtml(charge.name)}"
                   onchange="updateCharge(${index}, 'name', this.value)"
-                />
-                <input
-                  class="field-input"
-                  value="${escapeHtml(charge.amountText)}"
-                  onchange="updateCharge(${index}, 'amountText', this.value)"
-                />
+                
                 <button
                   onclick="removeCharge(${index})"
                   class="px-3 py-2 rounded-lg bg-red-500/20 text-red-300 border border-red-400/20 text-xs"
@@ -369,15 +390,14 @@ let cargo = {
     }
 
     function renderPreview() {
-      const total = charges.reduce((sum, charge) => {
-        return sum + extractNumericAmount(charge.amountText);
-      }, 0);
+const total = calculateTotal();
+      
 
-      const intro = (quoteData.introText || "Hola Customer,\n\nTe adjunto la cotización abajo:")
+      const intro = (quoteData.introText || "Hola Customer,Te adjunto la cotización abajo:")
         .replaceAll("\n", "<br>");
 
       document.getElementById("quotePreview").innerHTML = `
-        <table width="100%" cellpadding="0" cellspacing="0" style="padding:30px 0;background:#f4f6f9;font-family:Arial,Helvetica,sans-serif;color:#222;">
+        <table width="100%" cellpadding="1" cellspacing="0" style="padding:30px 0;background:#f4f6f9;font-family:Arial,Helvetica,sans-serif;color:#222;">
           <tr>
             <td align="center">
 
@@ -468,19 +488,21 @@ let cargo = {
                 <tr>
                   <td style="padding-top:20px;">
                     <table width="100%" cellpadding="10" cellspacing="0" style="border:1px solid #e4e4e4;border-radius:6px;background:#ffffff;table-layout:fixed;">
-                      ${charges.map((charge, index) => `
-                        <tr>
-                          <td style="width:50%;"><strong>${escapeHtml(charge.name)}</strong></td>
-                          <td style="width:50%;text-align:right;">${escapeHtml(charge.amountText)}</td>
-                        </tr>
-                        ${index === 1 ? `
-                          <tr>
-                            <td colspan="2" style="padding:8px 0;">
-                              <div style="height:2px;background:#0077c8;width:100%;border-radius:2px;"></div>
-                            </td>
-                          </tr>
-                        ` : ""}
-                      `).join("")}
+                     ${charges.map((charge, index) => `
+  <tr>
+    <td><strong>${escapeHtml(charge.name)}</strong></td>
+    <td align="right">${formatCharge(charge)}</td>
+  </tr>
+
+  ${index === 1 ? `
+    <tr>
+      <td colspan="2" style="padding:8px 0;">
+        <div style="height:2px;background:#0077c8;width:100%;border-radius:2px;"></div>
+      </td>
+    </tr>
+  ` : ""}
+
+`).join("")}
                     </table>
                   </td>
                 </tr>
@@ -494,7 +516,7 @@ let cargo = {
                       </tr>
                       <tr>
                         <td><strong>Total:</strong></td>
-                        <td align="right">${formatMoney(total)}</td>
+                        <td align="right">${total.toFixed(2)}</td>
                       </tr>
                     </table>
                   </td>
@@ -612,6 +634,42 @@ function updateCargo(field, value) {
   renderPreview();
 }
     
+function updateUnit(newUnit) {
+
+  if (cargo.unit === newUnit) return;
+
+  // 🔥 convert values
+  if (newUnit === "kg") {
+    cargo.grossWeight = cargo.grossWeight * 0.453592;
+    cargo.volumetricWeight = cargo.volumetricWeight * 0.453592;
+  } else {
+    cargo.grossWeight = cargo.grossWeight * 2.20462;
+    cargo.volumetricWeight = cargo.volumetricWeight * 2.20462;
+  }
+
+  cargo.unit = newUnit;
+
+  updateCargo("grossWeight", cargo.grossWeight); // recalculates
+}
+
+
+    function calculateFreight(charge) {
+
+  let weight = cargo.chargeableWeight;
+
+  // 🔥 convert if units mismatch
+  if (cargo.unit !== charge.unit) {
+    if (charge.unit === "kg") {
+      weight = weight * 0.453592;
+    } else {
+      weight = weight * 2.20462;
+    }
+  }
+
+  const value = weight * charge.rate;
+
+  return Math.max(value, charge.min || 0);
+}
     
   </script>
 
