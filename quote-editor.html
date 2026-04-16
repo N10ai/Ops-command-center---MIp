@@ -1069,42 +1069,14 @@ function updateChargeValue(index, value) {
   renderPreview();
 }
 
-
 function generatePDF() {
 
-  const element = document.getElementById("quotePreview");
+  // 🔥 inject premium layout
+  document.getElementById("pdfBody").innerHTML = renderPDFBody();
+  document.getElementById("pdfNotes").innerText = quoteData.notes;
 
-  // 🔥 clone so we don’t break UI
-  const clone = element.cloneNode(true);
-
-  // 🔥 force PDF mode
-  clone.classList.add("pdf-mode");
-
-  // 🔥 create temp container
-  const wrapper = document.createElement("div");
-  wrapper.style.padding = "20px";
-  wrapper.style.background = "white";
-  wrapper.appendChild(clone);
-
-  document.body.appendChild(wrapper);
-
-  html2pdf().set({
-    margin: 0,
-    filename: `${quoteData.quoteNumber}.pdf`,
-    image: { type: 'jpeg', quality: 1 },
-    html2canvas: {
-      scale: 2,
-      useCORS: true
-    },
-    jsPDF: {
-      unit: 'in',
-      format: 'letter',
-      orientation: 'portrait'
-    }
-  }).from(wrapper).save().then(() => {
-    document.body.removeChild(wrapper);
-  });
-
+  // 🔥 trigger REAL document print (not screenshot)
+  window.print();
 }
 
 
