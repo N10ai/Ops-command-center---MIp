@@ -246,75 +246,118 @@ function refresh() {
 // ==========================
 function generatePDF() {
 
+  const today = new Date();
+  const validity = new Date();
+  validity.setMonth(validity.getMonth() + 1);
+
   const container = document.createElement("div");
 
   container.innerHTML = `
-    <div style="font-family: Arial; padding:20px; color:#222">
+  <div style="font-family:Arial;padding:30px;color:#222;">
 
-      <!-- HEADER -->
-      <div style="display:flex; justify-content:space-between; margin-bottom:20px">
-        <div>
-          <h2 style="margin:0">MIP Cargo</h2>
-          <div style="font-size:12px;color:#555">Freight Quote</div>
-        </div>
-        <div style="text-align:right">
-          <strong>Quote #${quote.quoteNumber}</strong><br>
-          <span style="font-size:12px">${new Date().toLocaleDateString()}</span>
-        </div>
+    <!-- HEADER -->
+    <table style="width:100%; margin-bottom:20px;">
+      <tr>
+        <td>
+          <div style="font-size:20px;font-weight:bold;">MIP CARGO</div>
+          <div style="font-size:12px;color:#555;">Freight Services</div>
+        </td>
+
+        <td style="text-align:right;">
+          <div style="font-size:14px;"><strong>Quote #${quote.quoteNumber}</strong></div>
+          <div style="font-size:12px;color:#555;">Date: ${today.toLocaleDateString()}</div>
+          <div style="font-size:12px;color:#555;">
+            Valid Until: ${validity.toLocaleDateString()}
+          </div>
+        </td>
+      </tr>
+    </table>
+
+    <!-- ROUTE -->
+    <div style="text-align:center;margin-bottom:20px;">
+      <div style="font-size:16px;font-weight:bold;">
+        ${quote.originCode} → ${quote.destinationCode}
       </div>
-
-      <!-- ROUTE -->
-      <div style="margin-bottom:15px; font-size:14px;">
-        <strong>${quote.originCode} → ${quote.destinationCode}</strong>
+      <div style="font-size:12px;color:#777;">
+        ${quote.originName || ''} → ${quote.destinationName || ''}
       </div>
+    </div>
 
-      <!-- TABLE -->
-      <table style="width:100%; border-collapse:collapse; font-size:13px">
+    <!-- CHARGES TABLE -->
+    <table style="width:100%; border-collapse:collapse; font-size:13px;">
 
-        <thead>
-          <tr style="border-bottom:2px solid #ddd">
-            <th align="left">Description</th>
-            <th align="right">Amount</th>
-          </tr>
-        </thead>
+      <thead>
+        <tr style="border-bottom:2px solid #ddd;">
+          <th align="left">Description</th>
+          <th align="right">Amount</th>
+        </tr>
+      </thead>
 
-        <tbody>
-          ${quote.charges.map(c => `
-            <tr style="border-bottom:1px solid #eee">
-              <td style="padding:6px 0">
-                ${c.name}<br>
-                <span style="font-size:11px;color:#777">
+      <tbody>
+
+        ${quote.charges.map((c, i) => {
+
+          const isDivider = c.name.toLowerCase().includes("awb");
+
+          return `
+            ${isDivider ? `
+              <tr>
+                <td colspan="2" style="padding:10px 0;">
+                  <div style="height:2px;background:#1e3a8a;"></div>
+                </td>
+              </tr>
+            ` : ""}
+
+            <tr style="border-bottom:1px solid #eee;">
+              <td style="padding:6px 0;">
+                ${c.name}
+                <br>
+                <span style="font-size:11px;color:#777;">
                   ${c.type === "flat"
                     ? "Flat charge"
                     : `${c.rate} × ${getBaseValue(c).toFixed(2)}`
                   }
                 </span>
               </td>
+
               <td align="right">
                 $${calculateCharge(c).toFixed(2)}
               </td>
             </tr>
-          `).join("")}
-        </tbody>
+          `;
+        }).join("")}
 
-      </table>
+      </tbody>
+    </table>
 
-      <!-- TOTAL -->
-      <div style="margin-top:20px; text-align:right">
-        <h3>Total: ${document.getElementById("totalAmount").innerText}</h3>
+    <!-- TOTAL -->
+    <div style="margin-top:20px;text-align:right;">
+      <div style="font-size:16px;font-weight:bold;">
+        Total: ${document.getElementById("totalAmount").innerText}
       </div>
-
     </div>
+
+    <!-- NOTE -->
+    <div style="margin-top:20px;font-size:12px;color:#555;">
+      <strong>Next available departure based on space and booking confirmation.</strong>
+    </div>
+
+    <!-- SIGNATURE -->
+    <div style="margin-top:40px;font-size:12px;">
+      <strong>MIP Cargo Team</strong><br>
+      operations@mipcargo.com<br>
+      Miami, FL
+    </div>
+
+  </div>
   `;
 
-  const opt = {
+  html2pdf().set({
     margin: 0.3,
     filename: `Quote-${quote.quoteNumber}.pdf`,
-    html2canvas: { scale: 2, useCORS: true },
+    html2canvas: { scale: 2 },
     jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
-  };
-
-  html2pdf().set(opt).from(container).save();
+  }).from(container).save();
 }
 // ==========================
 // INIT
