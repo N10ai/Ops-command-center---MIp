@@ -246,45 +246,87 @@ function refresh() {
 // ==========================
 function generatePDF() {
 
-  const html = `
-    <div style="font-family:sans-serif;padding:20px">
-      <h2>Quote #${quote.quoteNumber}</h2>
-      <p>${quote.originCode} → ${quote.destinationCode}</p>
-      <hr/>
+  const container = document.createElement("div");
 
-      ${quote.charges.map(c => `
-        <div style="display:flex;justify-content:space-between">
-          <span>${c.name}</span>
-          <span>$${calculateCharge(c).toFixed(2)}</span>
+  container.innerHTML = `
+    <div style="font-family: Arial; padding:20px; color:#222">
+
+      <!-- HEADER -->
+      <div style="display:flex; justify-content:space-between; margin-bottom:20px">
+        <div>
+          <h2 style="margin:0">MIP Cargo</h2>
+          <div style="font-size:12px;color:#555">Freight Quote</div>
         </div>
-      `).join("")}
+        <div style="text-align:right">
+          <strong>Quote #${quote.quoteNumber}</strong><br>
+          <span style="font-size:12px">${new Date().toLocaleDateString()}</span>
+        </div>
+      </div>
 
-      <hr/>
-      <h3>Total: ${document.getElementById("totalAmount").innerText}</h3>
+      <!-- ROUTE -->
+      <div style="margin-bottom:15px; font-size:14px;">
+        <strong>${quote.originCode} → ${quote.destinationCode}</strong>
+      </div>
+
+      <!-- TABLE -->
+      <table style="width:100%; border-collapse:collapse; font-size:13px">
+
+        <thead>
+          <tr style="border-bottom:2px solid #ddd">
+            <th align="left">Description</th>
+            <th align="right">Amount</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          ${quote.charges.map(c => `
+            <tr style="border-bottom:1px solid #eee">
+              <td style="padding:6px 0">
+                ${c.name}<br>
+                <span style="font-size:11px;color:#777">
+                  ${c.type === "flat"
+                    ? "Flat charge"
+                    : `${c.rate} × ${getBaseValue(c).toFixed(2)}`
+                  }
+                </span>
+              </td>
+              <td align="right">
+                $${calculateCharge(c).toFixed(2)}
+              </td>
+            </tr>
+          `).join("")}
+        </tbody>
+
+      </table>
+
+      <!-- TOTAL -->
+      <div style="margin-top:20px; text-align:right">
+        <h3>Total: ${document.getElementById("totalAmount").innerText}</h3>
+      </div>
+
     </div>
   `;
 
   const opt = {
     margin: 0.3,
     filename: `Quote-${quote.quoteNumber}.pdf`,
-    html2canvas: { scale: 2 },
+    html2canvas: { scale: 2, useCORS: true },
     jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
   };
 
-  html2pdf().set(opt).from(html).save();
+  html2pdf().set(opt).from(container).save();
 }
-
 // ==========================
 // INIT
 // ==========================
 function init() {
 
-  // load some defaults
   quote.charges = [
     {...presets[0]},
     {...presets[3]}
   ];
 
+  loadHeaderData(); // ✅ ADD THIS
   renderPresetButtons();
   refresh();
 }
@@ -305,6 +347,23 @@ function renderPresetButtons() {
 }
 
 init();
+
+function loadHeaderData() {
+  document.getElementById("quoteNumber").innerText = "#" + quote.quoteNumber;
+
+  document.getElementById("routeCodes").innerText =
+    `${quote.originCode} → ${quote.destinationCode}`;
+
+  document.getElementById("routeNames").innerText =
+    `From ${quote.originCode} to ${quote.destinationCode}`;
+
+  document.getElementById("service").innerText =
+    quote.mode.toUpperCase() + " FREIGHT";
+
+  document.getElementById("cargoSummary").innerText =
+    `${quote.totals.chargeableWeightKg} kg • ${quote.totals.volumeCBM} m³`;
+}
+
 
 </script>
 
