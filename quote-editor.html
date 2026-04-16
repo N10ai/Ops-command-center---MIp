@@ -83,6 +83,105 @@
     .pdf-mode tr {
   page-break-inside: avoid;
 }
+
+@media print {
+
+  body * {
+    visibility: hidden;
+  }
+
+  #pdfTemplate, #pdfTemplate * {
+    visibility: visible;
+  }
+
+  #pdfTemplate {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
+
+  .pdf-page {
+    width: 8.5in;
+    min-height: 11in;
+    padding: 0.6in;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+    color: #111;
+    position: relative;
+  }
+
+  /* HEADER */
+  .pdf-header {
+    position: fixed;
+    top: 0.4in;
+    left: 0.6in;
+    right: 0.6in;
+    text-align: center;
+  }
+
+  .pdf-title {
+    font-size: 18px;
+    font-weight: 700;
+    margin-top: 6px;
+    color: #0077c8;
+  }
+
+  /* BODY */
+  .pdf-body {
+    margin-top: 1.4in;
+    margin-bottom: 1.8in;
+  }
+
+  /* FOOTER */
+  .pdf-footer {
+    position: fixed;
+    bottom: 0.4in;
+    left: 0.6in;
+    right: 0.6in;
+    font-size: 11px;
+    color: #555;
+  }
+
+  .footer-inner {
+    text-align: center;
+  }
+
+  .footer-line {
+    height: 1px;
+    background: #ddd;
+    margin: 10px 0;
+  }
+
+  .footer-address {
+    margin-top: 4px;
+    font-size: 10px;
+    color: #777;
+  }
+
+  .footer-logo {
+    margin-top: 6px;
+  }
+
+  .page-number::after {
+    content: counter(page);
+  }
+
+  /* TABLE FIXES */
+  table {
+    page-break-inside: avoid;
+  }
+
+  tr {
+    page-break-inside: avoid;
+  }
+
+  @page {
+    size: Letter;
+    margin: 0;
+  }
+}
+
     
   </style>
 </head>
@@ -1008,8 +1107,126 @@ function generatePDF() {
 
 }
 
+
+
+function renderPDFBody() {
+
+  const total = calculateTotal();
+
+  return `
+    <div style="max-width:650px;margin:auto;">
+
+      <!-- ROUTE -->
+      <div style="text-align:center;margin-bottom:20px;">
+        <div style="font-size:20px;font-weight:700;">
+          ${route.map(r => r.code).join(" → ")}
+        </div>
+        <div style="font-size:12px;color:#666;">
+          ${route.map(r => r.name).join(" → ")}
+        </div>
+      </div>
+
+      <!-- INFO GRID -->
+      <table width="100%" style="border:1px solid #ddd;border-radius:6px;margin-bottom:20px;">
+        <tr>
+          <td><strong>Quote #</strong></td>
+          <td align="right">${quoteData.quoteNumber}</td>
+        </tr>
+        <tr>
+          <td><strong>Reference</strong></td>
+          <td align="right">${quoteData.referenceNumber}</td>
+        </tr>
+        <tr>
+          <td><strong>Validity</strong></td>
+          <td align="right">${quoteData.validity}</td>
+        </tr>
+        <tr>
+          <td><strong>Airline</strong></td>
+          <td align="right">${quoteData.airline}</td>
+        </tr>
+      </table>
+
+      <!-- CHARGES -->
+      <table width="100%" style="border:1px solid #ddd;border-radius:6px;margin-bottom:20px;">
+        ${charges.map(c => `
+          <tr>
+            <td>
+              <strong>${c.name}</strong><br>
+              <span style="font-size:11px;color:#777;">${c.description || ""}</span>
+            </td>
+            <td align="right">${formatCharge(c)}</td>
+          </tr>
+        `).join("")}
+      </table>
+
+      <!-- TOTAL -->
+      <table width="100%" style="border-top:2px solid #0077c8;">
+        <tr>
+          <td><strong>Chargeable Weight</strong></td>
+          <td align="right">${cargo.chargeableWeight.toFixed(2)} ${cargo.unit}</td>
+        </tr>
+        <tr>
+          <td style="font-size:16px;"><strong>Total</strong></td>
+          <td align="right" style="font-size:16px;font-weight:700;">
+            $${total.toFixed(2)}
+          </td>
+        </tr>
+      </table>
+
+    </div>
+  `;
+}
+    
     
   </script>
 
+<div id="pdfTemplate" style="display:none;">
+  <div class="pdf-page">
+
+    <!-- HEADER -->
+    <div class="pdf-header">
+      <img src="https://raw.githubusercontent.com/N10ai/mip-tools/main/Untitled%20design%20-%201.png" width="60">
+      <div class="pdf-title">Freight Quotation</div>
+    </div>
+
+    <!-- BODY -->
+    <div class="pdf-body" id="pdfBody"></div>
+
+    <!-- FOOTER -->
+    <div class="pdf-footer">
+      <div class="footer-inner">
+
+        <div class="disclaimer">
+          <strong>Disclaimer:</strong>
+          <span id="pdfNotes"></span>
+        </div>
+
+        <div class="footer-line"></div>
+
+        <div class="contact">
+          MIP Cargo Express · Miami, FL<br>
+          pricing@mipcargoexp.com · www.mipcargoexp.com
+        </div>
+
+        <div class="footer-address">
+          1350 NW 129th Ave Suite 100, Miami, FL 33182
+        </div>
+
+        <div class="footer-logo">
+          <img src="https://raw.githubusercontent.com/N10ai/mip-tools/main/Untitled%20design%20-%201.png" width="28">
+        </div>
+
+        <div class="page-number">
+          Page <span class="pageNumber"></span>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+  
 </body>
 </html>
