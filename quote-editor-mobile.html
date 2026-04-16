@@ -54,6 +54,12 @@ input {
     <div id="service" class="font-semibold"></div>
   </div>
 
+<div class="flex gap-2 px-4">
+  <button onclick="setBase('kg')" class="glass px-3 py-1">KG</button>
+  <button onclick="setBase('cbm')" class="glass px-3 py-1">CBM</button>
+</div>
+<div id="presetContainer" class="flex gap-2 overflow-x-auto px-4"></div>
+
   <!-- CHARGES -->
   <div>
     <div class="flex justify-between items-center px-1 mb-2">
@@ -89,129 +95,105 @@ input {
 <script>
 
 // ==========================
-// MOCK DATA (NOW WITH TOTALS)
+// STATE
 // ==========================
 let quote = {
-  mode: "air", // air | ocean | ground
+  mode: "air",
+
+  baseType: "kg", // kg | cbm
 
   totals: {
     chargeableWeightKg: 600,
-    chargeableWeightLb: 1322,
-    volumeCBM: 3.2,
-    volumeCFT: 113
+    volumeCBM: 3.2
   },
 
   quoteNumber: "MIP-174402",
   originCode: "MIA",
-  originName: "Miami, USA",
   destinationCode: "UIO",
-  destinationName: "Quito, Ecuador",
 
-  service: "Air Freight • General Cargo",
-  cargo: "3 Pallets • 600 kg • 3.2 m³",
-
-  charges: [
-    { name: "A/F General", type: "per_kg", rate: 0.08 },
-    { name: "AWB Fee", type: "flat", amount: 50 }
-  ]
+  charges: []
 };
 
 // ==========================
-// LOAD UI
+// PRESETS (LIKE DESKTOP)
 // ==========================
-function loadQuote() {
-  document.getElementById("quoteNumber").innerText = "#" + quote.quoteNumber;
+const presets = [
+  { name: "A/F General", type: "per_kg", rate: 0.08 },
+  { name: "A/F Hazmat", type: "per_kg", rate: 0.12 },
+  { name: "Ocean Freight", type: "per_cbm", rate: 45 },
+  { name: "AWB Fee", type: "flat", amount: 50 },
+  { name: "Handling", type: "flat", amount: 35 }
+];
 
-  document.getElementById("routeCodes").innerText =
-    `${quote.originCode} → ${quote.destinationCode}`;
-
-  document.getElementById("routeNames").innerText =
-    `${quote.originName} → ${quote.destinationName}`;
-
-  document.getElementById("service").innerText = quote.service;
-  document.getElementById("cargoSummary").innerText = quote.cargo;
-
-  renderCharges();
-  calculateTotal();
+// ==========================
+// BASE SELECTOR
+// ==========================
+function setBase(type) {
+  quote.baseType = type;
+  refresh();
 }
 
 // ==========================
-// DETERMINE BASE VALUE
+// GET BASE
 // ==========================
-function getBaseValue(type) {
+function getBaseValue(charge) {
 
-  if (type === "per_kg") return quote.totals.chargeableWeightKg;
-  if (type === "per_lb") return quote.totals.chargeableWeightLb;
-
-  if (type === "per_cbm") return quote.totals.volumeCBM;
-  if (type === "per_cft") return quote.totals.volumeCFT;
+  if (charge.type === "per_kg") return quote.totals.chargeableWeightKg;
+  if (charge.type === "per_cbm") return quote.totals.volumeCBM;
 
   return 0;
 }
 
 // ==========================
-// CALCULATE CHARGE
+// CALCULATE
 // ==========================
-function calculateCharge(charge) {
-
-  if (charge.type === "flat") {
-    return Number(charge.amount) || 0;
-  }
-
-  const base = getBaseValue(charge.type);
-  const rate = Number(charge.rate) || 0;
-
-  return base * rate;
+function calculateCharge(c) {
+  if (c.type === "flat") return c.amount || 0;
+  return (c.rate || 0) * getBaseValue(c);
 }
 
 // ==========================
-// RENDER CHARGES
+// RENDER
 // ==========================
 function renderCharges() {
+
   const container = document.getElementById("chargesContainer");
   container.innerHTML = "";
 
-  quote.charges.forEach((charge, index) => {
+  quote.charges.forEach((c, i) => {
 
-    const amount = calculateCharge(charge);
+    const amount = calculateCharge(c);
 
     const div = document.createElement("div");
     div.className = "glass p-3 space-y-2";
 
     div.innerHTML = `
-      <div class="flex justify-between items-center">
+      <input value="${c.name}" 
+        onchange="updateField(${i}, 'name', this.value)"
+        class="font-medium text-sm">
 
-        <div>
-          <div class="font-medium">${charge.name}</div>
-          <div class="text-xs text-gray-400">${charge.type}</div>
-        </div>
+      <input value="${c.description || ''}" 
+        placeholder="Description"
+        onchange="updateField(${i}, 'description', this.value)"
+        class="text-xs text-gray-400">
 
-        <button onclick="removeCharge(${index})" class="text-red-400">✕</button>
-      </div>
+      <div class="flex gap-2">
 
-      <div class="flex justify-between items-center gap-3">
+        <select onchange="updateField(${i}, 'type', this.value)" class="bg-transparent">
+          <option ${c.type==='flat'?'selected':''}>flat</option>
+          <option ${c.type==='per_kg'?'selected':''}>per_kg</option>
+          <option ${c.type==='per_cbm'?'selected':''}>per_cbm</option>
+        </select>
 
         ${
-          charge.type === "flat"
-          ? `
-            <input type="number"
-              value="${charge.amount || 0}"
-              class="text-right text-lg"
-              onchange="updateAmount(${index}, this.value)">
-          `
-          : `
-            <div class="text-xs text-gray-400">
-              Base: ${getBaseValue(charge.type).toFixed(2)}
-            </div>
-
-            <input type="number"
-              value="${charge.rate || 0}"
-              class="text-right text-lg"
-              onchange="updateRate(${index}, this.value)">
-          `
+          c.type === "flat"
+          ? `<input type="number" value="${c.amount||0}" 
+               onchange="updateField(${i}, 'amount', this.value)">`
+          : `<input type="number" value="${c.rate||0}" 
+               onchange="updateField(${i}, 'rate', this.value)">`
         }
 
-        <div class="text-right font-bold w-24">
+        <div class="ml-auto font-bold">
           $${amount.toFixed(2)}
         </div>
 
@@ -223,32 +205,22 @@ function renderCharges() {
 }
 
 // ==========================
-// UPDATE RATE / AMOUNT
+// UPDATE FIELD
 // ==========================
-function updateRate(index, value) {
-  quote.charges[index].rate = Number(value) || 0;
+function updateField(i, key, val) {
+  if (key === "rate" || key === "amount") {
+    quote.charges[i][key] = Number(val) || 0;
+  } else {
+    quote.charges[i][key] = val;
+  }
   refresh();
 }
 
-function updateAmount(index, value) {
-  quote.charges[index].amount = Number(value) || 0;
-  refresh();
-}
-
 // ==========================
-// ADD / REMOVE
+// ADD PRESET
 // ==========================
-function addCharge() {
-  quote.charges.push({
-    name: "New Charge",
-    type: "flat",
-    amount: 0
-  });
-  renderCharges();
-}
-
-function removeCharge(index) {
-  quote.charges.splice(index, 1);
+function addPreset(index) {
+  quote.charges.push({...presets[index]});
   refresh();
 }
 
@@ -256,15 +228,9 @@ function removeCharge(index) {
 // TOTAL
 // ==========================
 function calculateTotal() {
-
   let total = 0;
-
-  quote.charges.forEach(c => {
-    total += calculateCharge(c);
-  });
-
-  document.getElementById("totalAmount").innerText =
-    "$" + total.toFixed(2);
+  quote.charges.forEach(c => total += calculateCharge(c));
+  document.getElementById("totalAmount").innerText = "$" + total.toFixed(2);
 }
 
 // ==========================
@@ -276,20 +242,75 @@ function refresh() {
 }
 
 // ==========================
-// ACTIONS
+// PDF
 // ==========================
 function generatePDF() {
-  console.log("Generate PDF with:", quote);
-}
 
-function sendQuote() {
-  console.log("Sending:", quote);
+  const html = `
+    <div style="font-family:sans-serif;padding:20px">
+      <h2>Quote #${quote.quoteNumber}</h2>
+      <p>${quote.originCode} → ${quote.destinationCode}</p>
+      <hr/>
+
+      ${quote.charges.map(c => `
+        <div style="display:flex;justify-content:space-between">
+          <span>${c.name}</span>
+          <span>$${calculateCharge(c).toFixed(2)}</span>
+        </div>
+      `).join("")}
+
+      <hr/>
+      <h3>Total: ${document.getElementById("totalAmount").innerText}</h3>
+    </div>
+  `;
+
+  const opt = {
+    margin: 0.3,
+    filename: `Quote-${quote.quoteNumber}.pdf`,
+    html2canvas: { scale: 2 },
+    jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+  };
+
+  html2pdf().set(opt).from(html).save();
 }
 
 // ==========================
-loadQuote();
+// INIT
+// ==========================
+function init() {
+
+  // load some defaults
+  quote.charges = [
+    {...presets[0]},
+    {...presets[3]}
+  ];
+
+  renderPresetButtons();
+  refresh();
+}
+
+// ==========================
+// PRESET BUTTONS UI
+// ==========================
+function renderPresetButtons() {
+  const container = document.getElementById("presetContainer");
+
+  presets.forEach((p, i) => {
+    const btn = document.createElement("button");
+    btn.innerText = p.name;
+    btn.className = "glass px-3 py-1 text-xs";
+    btn.onclick = () => addPreset(i);
+    container.appendChild(btn);
+  });
+}
+
+init();
 
 </script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+
 
 </body>
 </html>
