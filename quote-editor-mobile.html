@@ -255,98 +255,99 @@ function generatePDF() {
   container.innerHTML = `
   <div style="font-family:Arial;padding:30px;color:#222;">
 
-    <!-- HEADER -->
-    <table style="width:100%; margin-bottom:20px;">
-      <tr>
-        <td>
-          <div style="font-size:20px;font-weight:bold;">MIP CARGO</div>
-          <div style="font-size:12px;color:#555;">Freight Services</div>
-        </td>
+    <!-- LOGO -->
+    <div style="text-align:center;margin-bottom:10px;">
+      <img src="https://via.placeholder.com/80" width="80"/>
+    </div>
 
-        <td style="text-align:right;">
-          <div style="font-size:14px;"><strong>Quote #${quote.quoteNumber}</strong></div>
-          <div style="font-size:12px;color:#555;">Date: ${today.toLocaleDateString()}</div>
-          <div style="font-size:12px;color:#555;">
-            Valid Until: ${validity.toLocaleDateString()}
-          </div>
-        </td>
-      </tr>
-    </table>
+    <!-- TITLE -->
+    <div style="text-align:center;font-size:22px;font-weight:bold;color:#1e73be;margin-bottom:20px;">
+      Air Freight Quote
+    </div>
 
     <!-- ROUTE -->
     <div style="text-align:center;margin-bottom:20px;">
-      <div style="font-size:16px;font-weight:bold;">
+      <div style="font-size:20px;font-weight:bold;">
         ${quote.originCode} → ${quote.destinationCode}
       </div>
-      <div style="font-size:12px;color:#777;">
-        ${quote.originName || ''} → ${quote.destinationName || ''}
-      </div>
     </div>
 
-    <!-- CHARGES TABLE -->
-    <table style="width:100%; border-collapse:collapse; font-size:13px;">
+    <!-- INFO BOX -->
+    <div style="
+      border:1px solid #ddd;
+      border-radius:10px;
+      padding:15px;
+      margin-bottom:20px;
+      font-size:14px;
+    ">
 
-      <thead>
-        <tr style="border-bottom:2px solid #ddd;">
-          <th align="left">Description</th>
-          <th align="right">Amount</th>
-        </tr>
-      </thead>
+      ${row("Service", "Door to Airport")}
+      ${row("Reference #", "Cargo LSPO - IT - MIA")}
+      ${row("Validity", validity.toLocaleDateString())}
+      ${row("Airline", "Air Canada")}
+      ${row("Transit", "2 Days")}
+      ${row("Frequency", "Wednesday / Sunday")}
 
-      <tbody>
+    </div>
 
-        ${quote.charges.map((c, i) => {
+    <!-- CHARGES -->
+    <div style="font-size:15px;">
 
-          const isDivider = c.name.toLowerCase().includes("awb");
+      ${quote.charges.map((c, i) => {
 
-          return `
-            ${isDivider ? `
-              <tr>
-                <td colspan="2" style="padding:10px 0;">
-                  <div style="height:2px;background:#1e3a8a;"></div>
-                </td>
-              </tr>
-            ` : ""}
+        const isDivider = c.name.toLowerCase().includes("awb");
 
-            <tr style="border-bottom:1px solid #eee;">
-              <td style="padding:6px 0;">
-                ${c.name}
-                <br>
-                <span style="font-size:11px;color:#777;">
-                  ${c.type === "flat"
-                    ? "Flat charge"
-                    : `${c.rate} × ${getBaseValue(c).toFixed(2)}`
-                  }
-                </span>
-              </td>
+        return `
+          ${isDivider ? `
+            <div style="height:2px;background:#1e73be;margin:10px 0;"></div>
+          ` : ""}
 
-              <td align="right">
-                $${calculateCharge(c).toFixed(2)}
-              </td>
-            </tr>
-          `;
-        }).join("")}
+          <div style="display:flex;justify-content:space-between;margin-bottom:12px;">
+            <div>
+              <div style="font-weight:bold;">${c.name}</div>
+              <div style="font-size:12px;color:#777;">
+                ${c.type === "flat"
+                  ? "Flat charge"
+                  : `${c.rate} x ${getBaseValue(c).toFixed(2)}`
+                }
+              </div>
+            </div>
 
-      </tbody>
-    </table>
+            <div style="font-weight:bold;">
+              $${calculateCharge(c).toFixed(2)}
+            </div>
+          </div>
+        `;
+      }).join("")}
+
+    </div>
 
     <!-- TOTAL -->
-    <div style="margin-top:20px;text-align:right;">
-      <div style="font-size:16px;font-weight:bold;">
-        Total: ${document.getElementById("totalAmount").innerText}
+    <div style="text-align:right;margin-top:20px;font-size:18px;font-weight:bold;">
+      Total: ${document.getElementById("totalAmount").innerText}
+    </div>
+
+    <!-- FOOTER -->
+    <div style="
+      margin-top:40px;
+      background:#f5f7fa;
+      padding:20px;
+      text-align:center;
+      font-size:13px;
+    ">
+      <div style="color:#1e73be;font-weight:bold;">Pricing Team</div>
+      <div>M +1 (786) 427-5348</div>
+      <div>E pricing@mipcargoexp.com</div>
+      <div>W www.mipcargoexp.com</div>
+
+      <div style="margin-top:10px;">
+        1350 NW 129th Avenue Suite 100<br>
+        Miami, FL 33182
       </div>
-    </div>
 
-    <!-- NOTE -->
-    <div style="margin-top:20px;font-size:12px;color:#555;">
-      <strong>Next available departure based on space and booking confirmation.</strong>
-    </div>
-
-    <!-- SIGNATURE -->
-    <div style="margin-top:40px;font-size:12px;">
-      <strong>MIP Cargo Team</strong><br>
-      operations@mipcargo.com<br>
-      Miami, FL
+      <div style="margin-top:10px;font-size:11px;color:#777;">
+        Disclaimer: This email and any attachments are intended solely for the intended recipient.
+      </div>
     </div>
 
   </div>
@@ -358,6 +359,17 @@ function generatePDF() {
     html2canvas: { scale: 2 },
     jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
   }).from(container).save();
+}
+
+
+// helper row
+function row(label, value) {
+  return `
+    <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+      <div style="color:#666;">${label}</div>
+      <div style="font-weight:bold;">${value}</div>
+    </div>
+  `;
 }
 // ==========================
 // INIT
