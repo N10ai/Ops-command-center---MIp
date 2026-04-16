@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>MIP Mobile Quote</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script src="https://cdn.tailwindcss.com"></script>
+
+<style>
+body {
+  background: radial-gradient(circle at top, #0b1220, #05070d);
+  color: #e5e7eb;
+}
+
+.glass {
+  background: rgba(255,255,255,0.05);
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 14px;
+}
+
+input {
+  background: transparent;
+  outline: none;
+  width: 100%;
+}
+</style>
+</head>
+
+<body class="pb-28">
+
+<!-- HEADER -->
+<div class="sticky top-0 z-50 glass p-4 flex justify-between items-center">
+  <div>
+    <div class="text-xs text-gray-400">Quote</div>
+    <div class="font-bold text-lg">#MIP-174402</div>
+  </div>
+  <button class="bg-blue-600 px-4 py-2 rounded-lg text-sm">Send</button>
+</div>
+
+<!-- ROUTE -->
+<div class="p-4 space-y-4">
+
+  <div class="glass p-4">
+    <div class="text-xs text-gray-400">Route</div>
+    <div class="font-semibold text-lg">
+      MIA → UIO
+    </div>
+    <div class="text-sm text-gray-400">
+      Miami, USA → Quito, Ecuador
+    </div>
+  </div>
+
+  <!-- SERVICE -->
+  <div class="glass p-4">
+    <div class="text-xs text-gray-400">Service</div>
+    <div class="font-semibold">Air Freight • General Cargo</div>
+  </div>
+
+  <!-- CHARGES -->
+  <div class="space-y-3">
+    <div class="text-sm text-gray-400 px-1">Charges</div>
+
+    <!-- CHARGE ITEM -->
+    <div class="glass p-3 flex justify-between items-center">
+      <div>
+        <div class="font-medium">A/F General</div>
+        <div class="text-xs text-gray-400">$0.08/kg</div>
+      </div>
+      <input type="number" value="120" class="text-right text-lg w-20">
+    </div>
+
+    <div class="glass p-3 flex justify-between items-center">
+      <div>
+        <div class="font-medium">AWB Fee</div>
+        <div class="text-xs text-gray-400">Flat</div>
+      </div>
+      <input type="number" value="50" class="text-right text-lg w-20">
+    </div>
+
+  </div>
+
+  <!-- CARGO -->
+  <div class="glass p-4">
+    <div class="text-xs text-gray-400">Cargo</div>
+    <div class="text-sm mt-2">
+      3 Pallets • 600 kg • 3.2 m³
+    </div>
+  </div>
+
+</div>
+
+<!-- TOTAL BAR -->
+<div class="fixed bottom-0 left-0 right-0 glass p-4 flex justify-between items-center">
+
+  <div>
+    <div class="text-xs text-gray-400">Total</div>
+    <div class="text-xl font-bold">$170</div>
+  </div>
+
+  <button class="bg-blue-600 px-5 py-3 rounded-xl font-semibold">
+    Generate PDF
+  </button>
+
+</div>
+
+</body>
+</html>
